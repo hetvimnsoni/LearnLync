@@ -5,7 +5,9 @@ import { getLearnerPeers } from "@/lib/learners";
 import { getExchangeRequests } from "@/app/requests/actions";
 import { LearnersExplorer } from "@/components/learners/LearnersExplorer";
 import { LearningSpace } from "@/components/dashboard/LearningSpace";
+import { UpcomingMeetingsWidget } from "@/components/dashboard/UpcomingMeetingsWidget";
 import { FluidAtmosphere } from "@/components/3d/FluidAtmosphere";
+import { ScheduledMeeting } from "@/types/meeting";
 import {
   Sparkles,
   BookOpen,
@@ -15,6 +17,8 @@ import {
   ArrowLeftRight,
   MessageSquare,
   Users,
+  Video,
+  Phone,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +56,65 @@ export default async function DashboardPage() {
   // Retrieve exchange requests for active user
   const requestsData = await getExchangeRequests();
   const { accepted, pendingIncomingCount } = requestsData;
+
+  // Retrieve upcoming scheduled meetings
+  let initialMeetings: ScheduledMeeting[] = [];
+  try {
+    const { data: rawMeetings } = await supabase
+      .from("scheduled_meetings")
+      .select(`
+        id,
+        title,
+        description,
+        meeting_date,
+        start_time,
+        end_time,
+        owner_id,
+        room_code,
+        meeting_link,
+        meeting_type,
+        status,
+        invited_participant_ids,
+        reminder_minutes,
+        created_at,
+        updated_at,
+        profiles:owner_id (
+          full_name,
+          username,
+          avatar_url
+        )
+      `)
+      .order("meeting_date", { ascending: true })
+      .order("start_time", { ascending: true });
+
+    if (rawMeetings && Array.isArray(rawMeetings)) {
+      initialMeetings = rawMeetings.map((row: any) => {
+        const ownerProf = row.profiles;
+        return {
+          id: row.id,
+          title: row.title,
+          description: row.description,
+          meeting_date: row.meeting_date,
+          start_time: row.start_time,
+          end_time: row.end_time,
+          owner_id: row.owner_id,
+          owner_name: ownerProf?.full_name || ownerProf?.username || (row.owner_id === user.id ? fullName : "Learner"),
+          owner_username: ownerProf?.username,
+          owner_avatar: ownerProf?.avatar_url || null,
+          room_code: row.room_code,
+          meeting_link: row.meeting_link,
+          meeting_type: row.meeting_type || "study_group",
+          status: row.status || "upcoming",
+          invited_participant_ids: row.invited_participant_ids || [],
+          reminder_minutes: row.reminder_minutes ?? 15,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+        };
+      });
+    }
+  } catch (err) {
+    console.warn("Could not load dashboard meetings:", err);
+  }
 
   return (
     <div className="relative min-h-screen">
@@ -95,6 +158,13 @@ export default async function DashboardPage() {
 
         {/* User-Facing Learning Space (Metrics, Live Messaging status, Recent Exchange Activity) */}
         <LearningSpace requestsData={requestsData} currentUserId={user.id} />
+
+        {/* Upcoming Meetings Section (With live countdown & owner names) */}
+        <UpcomingMeetingsWidget
+          initialMeetings={initialMeetings}
+          currentUserId={user.id}
+          currentUserName={fullName}
+        />
 
         {/* Skills Profile Info Card */}
         <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
@@ -209,20 +279,92 @@ export default async function DashboardPage() {
           </div>
 
           {accepted.length === 0 ? (
-            <div className="p-8 rounded-2xl bg-slate-50/80 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-850 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 mx-auto flex items-center justify-center">
-                <Users className="w-6 h-6" />
+            <div className="space-y-4">
+              <div className="p-8 rounded-2xl bg-slate-50/80 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-850 text-center space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 mx-auto flex items-center justify-center">
+                  <MessageSquare className="w-6 h-6" />
+                </div>
+                <div className="space-y-1 max-w-md mx-auto">
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                    Direct Messaging is Ready
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Connect directly with peer learners to exchange skills, share files, and collaborate in real-time.
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-3 flex-wrap">
+                  <Link
+                    href="/chat"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition shadow-sm"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Open Messages Workspace</span>
+                  </Link>
+                  <Link
+                    href="/learners"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition shadow-sm"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Browse Learners</span>
+                  </Link>
+                </div>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                No active skill exchanges yet. Propose an exchange to a peer in the directory or accept incoming requests.
-              </p>
-              <Link
-                href="/learners"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition shadow-sm"
-              >
-                <span>Find Peers &amp; Propose Exchange</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+
+              {peers.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Quick Chat with Active Learners
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {peers.slice(0, 3).map((peer) => (
+                      <div
+                        key={peer.id}
+                        className="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/50 flex flex-col justify-between gap-3 hover:border-brand-400 transition"
+                      >
+                        <div className="flex items-center gap-3">
+                          {peer.avatar_url ? (
+                            <img
+                              src={peer.avatar_url}
+                              alt={peer.full_name || "Peer"}
+                              className="w-10 h-10 rounded-xl object-cover border border-slate-200 dark:border-slate-700"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                              {(peer.full_name || peer.username || "P").charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                              {peer.full_name}
+                            </p>
+                            <p className="text-xs font-mono text-slate-400 truncate">
+                              @{peer.username}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/chat/${peer.id}`}
+                            className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold bg-brand-600 text-white hover:bg-brand-500 transition shadow-sm"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>Chat</span>
+                          </Link>
+                          <Link
+                            href={`/chat/${peer.id}`}
+                            className="inline-flex items-center justify-center gap-1 py-2 px-2.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 transition shadow-xs"
+                            title="Start Video Call"
+                          >
+                            <Video className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Call</span>
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -269,13 +411,23 @@ export default async function DashboardPage() {
                       </p>
                     </div>
 
-                    <Link
-                      href={`/chat/${partnerId}`}
-                      className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold bg-brand-600 text-white hover:bg-brand-500 transition shadow-sm"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      <span>Open Real-time Chat</span>
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/chat/${partnerId}`}
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold bg-brand-600 text-white hover:bg-brand-500 transition shadow-sm"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Chat</span>
+                      </Link>
+                      <Link
+                        href={`/chat/${partnerId}`}
+                        className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 transition shadow-xs"
+                        title="Start Video Call"
+                      >
+                        <Video className="w-3.5 h-3.5" />
+                        <span>Video Call</span>
+                      </Link>
+                    </div>
                   </div>
                 );
               })}

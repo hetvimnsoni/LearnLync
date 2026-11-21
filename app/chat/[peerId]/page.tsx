@@ -1,22 +1,23 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { toNexconnUserId } from "@/lib/nexconn/identity";
-import { ChatRoom } from "@/components/chat/ChatRoom";
-import { ChatPeerInfo } from "@/types/chat";
+import { toNexconnUserId, toSupabaseUserId } from "@/lib/nexconn/identity";
+import { ChatWorkspace } from "@/components/chat/ChatWorkspace";
+import { PeerProfile } from "@/types/learner";
 import { FluidAtmosphere } from "@/components/3d/FluidAtmosphere";
 import { ArrowLeft, UserX, AlertCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 interface ChatPageProps {
-  params: {
+  params: Promise<{
     peerId: string;
-  };
+  }>;
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const { peerId } = params;
+  const resolvedParams = await params;
+  const rawParam = resolvedParams?.peerId ? decodeURIComponent(resolvedParams.peerId).trim() : "";
 
   // 1. Authenticate the active user session
   const supabase = await createClient();
@@ -25,113 +26,179 @@ export default async function ChatPage({ params }: ChatPageProps) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/login?redirectTo=/chat/${encodeURIComponent(peerId)}`);
+    redirect(`/login?redirectTo=/chat/${encodeURIComponent(rawParam)}`);
   }
 
-  // 2. Reject attempts to message oneself
-  if (user.id === peerId) {
+  // 2. Resolve learner identifier: Standard UUID (36 chars), Nexconn ID (32 chars), or Username
+  const standardUuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const nexconnIdRegex = /^[0-9a-f]{32}$/i;
+
+  let resolvedId: string | null = null;
+
+  if (standardUuidRegex.test(rawParam)) {
+    resolvedId = rawParam.toLowerCase();
+  } else if (nexconnIdRegex.test(rawParam)) {
+    try {
+      resolvedId = toSupabaseUserId(rawParam);
+    } catch {
+      resolvedId = null;
+    }
+  }
+
+  // 3. Query profile from Supabase
+  let profile: any = null;
+
+  // Search by resolved UUID if available
+  if (resolvedId) {
+    const { data: profileById } = await supabase
+      .from("profiles")
+      .select("id, full_name, username, avatar_url, bio, skills_offered, skills_needed")
+      .eq("id", resolvedId)
+      .maybeSingle();
+
+    profile = profileById;
+  }
+
+  // If not found by ID, attempt lookup by username (e.g. /chat/marcus_frontend or /chat/@elena)
+  if (!profile && rawParam) {
+    const cleanUsername = rawParam.replace(/^@/, "").trim();
+    const { data: profileByUsername } = await supabase
+      .from("profiles")
+      .select("id, full_name, username, avatar_url, bio, skills_offered, skills_needed")
+      .ilike("username", cleanUsername)
+      .maybeSingle();
+
+    profile = profileByUsername;
+    if (profile) {
+      resolvedId = profile.id;
+    }
+  }
+
+  // Fallback for valid UUIDs where profile creation trigger might be pending
+  if (!profile && resolvedId) {
+    profile = {
+      id: resolvedId,
+      full_name: "Peer Learner",
+      username: `learner_${resolvedId.slice(0, 6)}`,
+      avatar_url: null,
+      bio: null,
+      skills_offered: [],
+      skills_needed: [],
+    };
+  }
+
+  // 4. Reject attempts to message oneself
+  if (profile && user.id === profile.id) {
     return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-4">
-        <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 mx-auto flex items-center justify-center">
-          <AlertCircle className="w-7 h-7" />
+      <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+        <FluidAtmosphere />
+        <div className="max-w-md w-full p-8 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-xl">
+          <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 mx-auto flex items-center justify-center">
+            <AlertCircle className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              Cannot Message Yourself
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              One-to-one chat is designed for connecting with other learners. Find a peer on the discovery page.
+            </p>
+          </div>
+          <Link
+            href="/learners"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 text-white text-xs font-semibold hover:bg-brand-500 transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Discover Learners</span>
+          </Link>
         </div>
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-            Cannot Message Yourself
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            One-to-one chat is designed for connecting with other learners. Find a peer on the discovery page.
-          </p>
-        </div>
-        <Link
-          href="/learners"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Discover Learners</span>
-        </Link>
       </div>
     );
   }
 
-  // 3. Validate UUID format
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(peerId)) {
+  // 5. Handle unresolvable learner
+  if (!profile) {
     return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-4">
-        <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-600 mx-auto flex items-center justify-center">
-          <UserX className="w-7 h-7" />
+      <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+        <FluidAtmosphere />
+        <div className="max-w-md w-full p-8 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-xl">
+          <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 mx-auto flex items-center justify-center">
+            <UserX className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              Learner Not Found
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Could not find a learner matching &quot;{rawParam}&quot;. Please check the identifier or explore discoverable peers.
+            </p>
+          </div>
+          <Link
+            href="/learners"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 text-white text-xs font-semibold hover:bg-brand-500 transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Explore Other Learners</span>
+          </Link>
         </div>
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-            Invalid Learner Identifier
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            The requested peer ID does not match a valid user UUID.
-          </p>
-        </div>
-        <Link
-          href="/learners"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white dark:bg-slate-700 text-xs font-semibold hover:bg-slate-800 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Learners</span>
-        </Link>
       </div>
     );
   }
 
-  // 4. Fetch the target peer profile from Supabase
-  const { data: profile, error } = await supabase
+  // 6. Fetch accepted skill exchanges involving current user to get priority peers
+  const { data: exchanges } = await supabase
+    .from("skill_exchanges")
+    .select("sender_id, receiver_id, status")
+    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+    .eq("status", "accepted");
+
+  const acceptedPeerIds = new Set<string>();
+  if (exchanges && Array.isArray(exchanges)) {
+    for (const ex of exchanges) {
+      if (ex.sender_id !== user.id) acceptedPeerIds.add(ex.sender_id);
+      if (ex.receiver_id !== user.id) acceptedPeerIds.add(ex.receiver_id);
+    }
+  }
+
+  // 7. Fetch all other profiles for learner directory
+  const { data: allProfilesData } = await supabase
     .from("profiles")
     .select("id, full_name, username, avatar_url, bio, skills_offered, skills_needed")
-    .eq("id", peerId)
-    .single();
+    .neq("id", user.id)
+    .limit(50);
 
-  if (error || !profile) {
-    return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-4">
-        <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 mx-auto flex items-center justify-center">
-          <UserX className="w-7 h-7" />
-        </div>
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-            Learner Not Found
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            The profile for this learner does not exist or has been removed.
-          </p>
-        </div>
-        <Link
-          href="/learners"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Explore Other Learners</span>
-        </Link>
-      </div>
-    );
-  }
+  const allLearners: PeerProfile[] = (allProfilesData as PeerProfile[]) || [];
 
-  // 5. Construct normalized peer info with deterministic Nexconn ID
-  const peerInfo: ChatPeerInfo = {
-    id: profile.id,
-    nexconnUserId: toNexconnUserId(profile.id),
-    fullName: profile.full_name || "Learner",
-    username: profile.username || `learner_${profile.id.slice(0, 5)}`,
-    avatarUrl: profile.avatar_url || null,
-    bio: profile.bio || null,
-    skillsOffered: Array.isArray(profile.skills_offered) ? profile.skills_offered : [],
-    skillsNeeded: Array.isArray(profile.skills_needed) ? profile.skills_needed : [],
-  };
+  // 8. Build conversation peers list ensuring current target peer is at the top
+  const otherPeers = allLearners.filter((p) => p.id !== profile.id);
+  const conversationPeers: PeerProfile[] = [
+    profile as PeerProfile,
+    ...otherPeers.filter((p) => acceptedPeerIds.has(p.id)),
+    ...otherPeers.filter((p) => !acceptedPeerIds.has(p.id)).slice(0, 6),
+  ];
+
+  // Fetch current user's profile info for calling identification
+  const { data: myProfile } = await supabase
+    .from("profiles")
+    .select("full_name, avatar_url")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const currentUserName =
+    myProfile?.full_name ||
+    user.user_metadata?.full_name ||
+    user.email?.split("@")[0] ||
+    "Learner";
+  const currentUserAvatar = myProfile?.avatar_url || user.user_metadata?.avatar_url || null;
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)]">
-      <FluidAtmosphere />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <ChatRoom peer={peerInfo} currentUserId={user.id} />
-      </div>
-    </div>
+    <ChatWorkspace
+      currentUserId={user.id}
+      currentUserName={currentUserName}
+      currentUserAvatar={currentUserAvatar}
+      initialPeers={conversationPeers}
+      allLearners={allLearners}
+      initialActivePeerId={profile.id}
+    />
   );
 }
-

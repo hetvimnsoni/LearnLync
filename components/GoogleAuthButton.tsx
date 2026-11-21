@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getGoogleOAuthUrl } from "@/app/auth/actions";
+import { createClient } from "@/lib/supabase/client";
 
 export function GoogleAuthButton({ redirectTo }: { redirectTo?: string }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,9 +11,28 @@ export function GoogleAuthButton({ redirectTo }: { redirectTo?: string }) {
     setIsLoading(true);
     setError(null);
     try {
-      const url = await getGoogleOAuthUrl(redirectTo);
-      if (url) {
-        window.location.href = url;
+      const supabase = createClient();
+      const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(redirectTo || "/dashboard")}`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+
+      if (error) {
+        setError(error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
       }
     } catch (err: any) {
       setError(err?.message || "Failed to initialize Google Sign-in");
