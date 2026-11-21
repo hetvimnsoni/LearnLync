@@ -12,6 +12,7 @@ import {
   LogOut,
   Sparkles,
   Compass,
+  Award,
 } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
 
@@ -153,6 +154,37 @@ export function NavbarLinks({ user, profile, initialPendingCount }: NavbarLinksP
             {displayPending > 99 ? "99+" : displayPending}
           </span>
         )}
+      </Link>
+
+      {/* AI Assistant Navigation Link */}
+      <Link
+        href="/ai"
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${
+          pathname.startsWith("/ai")
+            ? "bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold ring-1 ring-brand-500/20"
+            : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+        }`}
+        title="AI Learning Assistant"
+      >
+        <Sparkles className="w-4 h-4 text-accent-amber animate-pulse" />
+        <span className="hidden sm:inline font-bold bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-300 bg-clip-text text-transparent">
+          AI Hub
+        </span>
+        <span className="sm:hidden font-bold text-brand-600 dark:text-brand-400">AI</span>
+      </Link>
+
+      {/* Certificates Navigation Link */}
+      <Link
+        href="/certificates"
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${
+          pathname.startsWith("/certificates")
+            ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 font-semibold"
+            : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+        }`}
+        title="Verified Certificates of Progress"
+      >
+        <Award className="w-4 h-4 text-amber-500" />
+        <span className="hidden md:inline">Certificates</span>
       </Link>
 
       {/* Light/Dark Mode Toggle */}

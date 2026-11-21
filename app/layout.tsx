@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { NexconnProvider } from "@/components/providers/NexconnProvider";
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { NotificationToasts } from "@/components/notifications/NotificationToasts";
+import { LumiProvider } from "@/components/mascot/LumiContext";
+import { LumiFloatingLauncher } from "@/components/mascot/LumiFloatingLauncher";
 
 export const metadata: Metadata = {
   title: "LearnLync — Share What You Know. Discover What You Don't.",
@@ -32,9 +34,12 @@ export default function RootLayout({
         <ThemeProvider>
           <NexconnProvider appKey={appKey}>
             <NotificationProvider>
-              <Navbar />
-              <div className="flex-1">{children}</div>
-              <NotificationToasts />
+              <LumiProvider>
+                <Navbar />
+                <div className="flex-1">{children}</div>
+                <NotificationToasts />
+                <LumiFloatingLauncher />
+              </LumiProvider>
             </NotificationProvider>
           </NexconnProvider>
         </ThemeProvider>

@@ -16,6 +16,10 @@ import {
   Inbox,
   ShieldCheck,
   Zap,
+  Award,
+  FileCheck,
+  Compass,
+  BarChart2,
 } from "lucide-react";
 import { useNexconn } from "@/components/providers/NexconnProvider";
 
@@ -190,6 +194,71 @@ export function LearningSpace({ requestsData, currentUserId }: LearningSpaceProp
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
+        </div>
+      </div>
+
+      {/* AI Learning Assistant Quick Launch Hub */}
+      <div className="rounded-3xl border border-brand-200/80 dark:border-brand-900/60 bg-gradient-to-br from-brand-50/50 via-white to-indigo-50/40 dark:from-slate-900/90 dark:via-slate-900/90 dark:to-brand-950/40 backdrop-blur-xl p-6 sm:p-7 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center shadow-md">
+              <Sparkles className="w-6 h-6 text-accent-amber" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
+                LearnLync AI Assistant & Tools
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                AI-driven peer recommendations, personalized roadmaps, quizzes, and verified certificates.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/ai"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition shadow-sm self-start sm:self-auto"
+          >
+            <span>Open AI Hub</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+          <Link
+            href="/ai?tab=peers"
+            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 hover:border-brand-500 transition space-y-1 shadow-2xs group"
+          >
+            <Users className="w-4 h-4 text-brand-600 group-hover:scale-110 transition-transform" />
+            <p className="text-xs font-bold text-slate-900 dark:text-white">Find Peer Teacher</p>
+            <p className="text-[10px] text-slate-400">Match skills needed/offered</p>
+          </Link>
+
+          <Link
+            href="/ai?tab=roadmap"
+            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 hover:border-indigo-500 transition space-y-1 shadow-2xs group"
+          >
+            <Compass className="w-4 h-4 text-indigo-600 group-hover:scale-110 transition-transform" />
+            <p className="text-xs font-bold text-slate-900 dark:text-white">Learning Roadmap</p>
+            <p className="text-[10px] text-slate-400">Step-by-step milestones</p>
+          </Link>
+
+          <Link
+            href="/ai?tab=quiz"
+            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 hover:border-emerald-500 transition space-y-1 shadow-2xs group"
+          >
+            <FileCheck className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
+            <p className="text-xs font-bold text-slate-900 dark:text-white">AI Quizzes</p>
+            <p className="text-[10px] text-slate-400">Test & identify weak spots</p>
+          </Link>
+
+          <Link
+            href="/certificates"
+            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 hover:border-amber-500 transition space-y-1 shadow-2xs group"
+          >
+            <Award className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
+            <p className="text-xs font-bold text-slate-900 dark:text-white">Certificates</p>
+            <p className="text-[10px] text-slate-400">Verified progress studio</p>
+          </Link>
         </div>
       </div>
 

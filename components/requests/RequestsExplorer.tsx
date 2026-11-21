@@ -22,7 +22,10 @@ import {
   RefreshCw,
   User,
   Zap,
+  Award,
 } from "lucide-react";
+import { SessionPrepModal } from "./SessionPrepModal";
+import { SessionCompleteModal } from "./SessionCompleteModal";
 
 interface RequestsExplorerProps {
   initialData: CategorizedRequests;
@@ -37,6 +40,9 @@ export function RequestsExplorer({ initialData, currentUserId }: RequestsExplore
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [isRefreshing, startRefresh] = useTransition();
+
+  const [prepModalReq, setPrepModalReq] = useState<SkillExchange | null>(null);
+  const [completeModalReq, setCompleteModalReq] = useState<SkillExchange | null>(null);
 
   const handleRefresh = () => {
     startRefresh(async () => {
@@ -98,6 +104,13 @@ export function RequestsExplorer({ initialData, currentUserId }: RequestsExplore
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Accepted • Chat Active</span>
+          </span>
+        );
+      case "completed":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 shadow-2xs">
+            <Award className="w-3.5 h-3.5 text-amber-500" />
+            <span>Completed • Verified</span>
           </span>
         );
       case "rejected":
@@ -387,15 +400,56 @@ export function RequestsExplorer({ initialData, currentUserId }: RequestsExplore
                       </button>
                     )}
 
-                    {/* Accepted: Link to Chat */}
+                    {/* Accepted: Actions for Chat, AI Session Prep, and Session Completion */}
                     {req.status === "accepted" && (
-                      <Link
-                        href={`/chat/${otherUserId}`}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-brand-600 to-indigo-600 text-white hover:from-brand-500 hover:to-indigo-500 transition shadow-md shadow-brand-500/20"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        <span>Open 1:1 Nexconn Chat</span>
-                      </Link>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPrepModalReq(req)}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-300 border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition shadow-2xs"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-accent-amber" />
+                          <span>AI Session Prep</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setCompleteModalReq(req)}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 transition shadow-2xs"
+                        >
+                          <Award className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Complete & Verify</span>
+                        </button>
+
+                        <Link
+                          href={`/chat/${otherUserId}`}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-brand-600 to-indigo-600 text-white hover:from-brand-500 hover:to-indigo-500 transition shadow-md shadow-brand-500/20"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Open 1:1 Nexconn Chat</span>
+                        </Link>
+                      </div>
+                    )}
+
+                    {/* Completed: Link to Chat & View Certificates */}
+                    {req.status === "completed" && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Link
+                          href="/certificates"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition shadow-md"
+                        >
+                          <Award className="w-3.5 h-3.5" />
+                          <span>View Certificates</span>
+                        </Link>
+
+                        <Link
+                          href={`/chat/${otherUserId}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Chat History</span>
+                        </Link>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -403,6 +457,37 @@ export function RequestsExplorer({ initialData, currentUserId }: RequestsExplore
             );
           })}
         </div>
+      )}
+
+      {/* AI Session Preparation Modal */}
+      {prepModalReq && (
+        <SessionPrepModal
+          exchangeId={prepModalReq.id}
+          skillOffered={prepModalReq.skill_offered}
+          peerName={
+            (prepModalReq.sender_id === currentUserId
+              ? prepModalReq.receiver?.full_name
+              : prepModalReq.sender?.full_name) || "Learner"
+          }
+          isOpen={true}
+          onClose={() => setPrepModalReq(null)}
+        />
+      )}
+
+      {/* Post-Session Completion & Verification Modal */}
+      {completeModalReq && (
+        <SessionCompleteModal
+          exchangeId={completeModalReq.id}
+          skillOffered={completeModalReq.skill_offered}
+          peerName={
+            (completeModalReq.sender_id === currentUserId
+              ? completeModalReq.receiver?.full_name
+              : completeModalReq.sender?.full_name) || "Learner"
+          }
+          isOpen={true}
+          onClose={() => setCompleteModalReq(null)}
+          onCompleteSuccess={handleRefresh}
+        />
       )}
     </div>
   );

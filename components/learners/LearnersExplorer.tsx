@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
+import Link from "next/link";
 import { PeerProfile } from "@/types/learner";
 import { LearnerCard } from "./LearnerCard";
 import { PeerProfileModal } from "./PeerProfileModal";
@@ -133,6 +134,14 @@ export function LearnersExplorer({
         </div>
 
         <div className="flex items-center gap-2">
+          <Link
+            href="/ai?tab=peers"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 transition shadow-sm"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-accent-amber" />
+            <span>AI Smart Match</span>
+          </Link>
+
           <button
             type="button"
             onClick={handleRefresh}

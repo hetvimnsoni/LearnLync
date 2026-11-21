@@ -27,6 +27,16 @@ export const env = {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     "",
+
+  // Google Gemini AI Configuration (Server-side only)
+  get GEMINI_API_KEY(): string {
+    if (typeof window !== "undefined") {
+      throw new Error(
+        "CRITICAL SECURITY VIOLATION: GEMINI_API_KEY cannot be accessed on the client side!"
+      );
+    }
+    return process.env.GEMINI_API_KEY || "";
+  },
 };
 
 /**
