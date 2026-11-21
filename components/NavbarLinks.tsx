@@ -11,8 +11,9 @@ import {
   ArrowLeftRight,
   LogOut,
   Sparkles,
-  Compass,
   Award,
+  Video,
+  Calendar,
 } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
 
@@ -35,11 +36,10 @@ export function NavbarLinks({ user, profile, initialPendingCount }: NavbarLinksP
         <nav className="hidden md:flex items-center gap-1 sm:gap-2 mr-2">
           <Link
             href="/"
-            className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${
-              pathname === "/"
+            className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${pathname === "/"
                 ? "text-brand-600 dark:text-brand-400 font-semibold"
                 : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/60"
-            }`}
+              }`}
           >
             Home
           </Link>
@@ -88,11 +88,10 @@ export function NavbarLinks({ user, profile, initialPendingCount }: NavbarLinksP
       {/* Dashboard */}
       <Link
         href="/dashboard"
-        className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${
-          pathname === "/dashboard"
+        className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${pathname === "/dashboard"
             ? "bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold"
             : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-        }`}
+          }`}
       >
         <LayoutDashboard className="w-4 h-4 text-brand-600 dark:text-brand-400" />
         <span>Dashboard</span>
@@ -101,11 +100,10 @@ export function NavbarLinks({ user, profile, initialPendingCount }: NavbarLinksP
       {/* Find Peers */}
       <Link
         href="/learners"
-        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${
-          pathname === "/learners"
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${pathname === "/learners"
             ? "bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold"
             : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-        }`}
+          }`}
       >
         <Users className="w-4 h-4 text-indigo-500" />
         <span className="hidden sm:inline">Find Peers</span>
@@ -115,11 +113,10 @@ export function NavbarLinks({ user, profile, initialPendingCount }: NavbarLinksP
       {/* Messages / Chat Navigation Item with Unread Badge */}
       <Link
         href="/chat"
-        className={`relative inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${
-          pathname.startsWith("/chat")
+        className={`relative inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${pathname.startsWith("/chat")
             ? "bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold"
             : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-        }`}
+          }`}
         title="Direct messages"
       >
         <MessageSquare className="w-4 h-4 text-brand-600 dark:text-brand-400" />
@@ -134,14 +131,39 @@ export function NavbarLinks({ user, profile, initialPendingCount }: NavbarLinksP
         )}
       </Link>
 
+      {/* Video Meetings (Google Meet style) */}
+      <Link
+        href="/meet"
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${pathname.startsWith("/meet")
+            ? "bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold"
+            : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+          }`}
+        title="Video Meetings"
+      >
+        <Video className="w-4 h-4 text-emerald-500" />
+        <span className="hidden sm:inline">Meetings</span>
+      </Link>
+
+      {/* Calendar & Schedule */}
+      <Link
+        href="/calendar"
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${pathname.startsWith("/calendar")
+            ? "bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold"
+            : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+          }`}
+        title="Meeting Calendar"
+      >
+        <Calendar className="w-4 h-4 text-purple-500" />
+        <span className="hidden sm:inline">Calendar</span>
+      </Link>
+
       {/* Requests Navigation Item with Incoming Pending Count Badge */}
       <Link
         href="/requests"
-        className={`relative inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${
-          pathname === "/requests"
+        className={`relative inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${pathname === "/requests"
             ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-semibold"
             : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-        }`}
+          }`}
         title="Skill exchange requests"
       >
         <ArrowLeftRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -159,11 +181,10 @@ export function NavbarLinks({ user, profile, initialPendingCount }: NavbarLinksP
       {/* AI Assistant Navigation Link */}
       <Link
         href="/ai"
-        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${
-          pathname.startsWith("/ai")
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${pathname.startsWith("/ai")
             ? "bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold ring-1 ring-brand-500/20"
             : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-        }`}
+          }`}
         title="AI Learning Assistant"
       >
         <Sparkles className="w-4 h-4 text-accent-amber animate-pulse" />
@@ -176,11 +197,10 @@ export function NavbarLinks({ user, profile, initialPendingCount }: NavbarLinksP
       {/* Certificates Navigation Link */}
       <Link
         href="/certificates"
-        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${
-          pathname.startsWith("/certificates")
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${pathname.startsWith("/certificates")
             ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 font-semibold"
             : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-        }`}
+          }`}
         title="Verified Certificates of Progress"
       >
         <Award className="w-4 h-4 text-amber-500" />

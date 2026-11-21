@@ -2,10 +2,45 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { ChatPeerInfo, ChatMessage } from "@/types/chat";
+import { useRouter } from "next/navigation";
+import {
+  ChatPeerInfo,
+  ChatMessage,
+  formatVoiceMessagePayload,
+  formatAttachmentPayload,
+  AttachmentFile,
+  parseAttachmentMessage,
+  parseVoiceMessage,
+} from "@/types/chat";
 import { MessageItem } from "./MessageItem";
+import { AttachmentMenu } from "./AttachmentMenu";
+import { AttachmentPreviewTray, StagedFile } from "./AttachmentPreviewTray";
+import { DeleteChatDialog } from "./DeleteChatDialog";
+import { DeleteMessageDialog } from "./DeleteMessageDialog";
 import { useNexconn } from "@/components/providers/NexconnProvider";
 import { useNotification } from "@/components/providers/NotificationProvider";
+import { createClient } from "@/lib/supabase/client";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import { useOneToOneCall } from "@/hooks/useOneToOneCall";
+import { IncomingCallDialog } from "@/components/calling/IncomingCallDialog";
+import { ActiveCallModal } from "@/components/calling/ActiveCallModal";
+import {
+  uploadChatFile,
+  validateFile,
+  isImageFile,
+  CHAT_STORAGE_BUCKET,
+} from "@/lib/supabase/chatStorage";
+import { hideChatForUser, unhideChatForUser } from "@/lib/supabase/hiddenChats";
+import {
+  deleteMessageForMe,
+  deleteMessageForEveryone,
+  fetchAllDeletedIds,
+} from "@/lib/supabase/messageDeletion";
+import {
+  fetchSupabaseMessages,
+  saveSupabaseMessage,
+  subscribeSupabaseMessages,
+} from "@/lib/supabase/chatMessages";
 import {
   createDirectMessagesQuery,
   loadMessagePage,
@@ -19,22 +54,38 @@ import {
   ArrowLeft,
   Send,
   Sparkles,
-  Wifi,
   WifiOff,
   RefreshCw,
-  Key,
-  BookOpen,
-  GraduationCap,
   AlertCircle,
   MessageSquare,
+  Mic,
+  Phone,
+  Video,
+  Trash2,
+  Loader2,
+  Paperclip,
+  MoreVertical,
+  GraduationCap,
 } from "lucide-react";
 
 interface ChatRoomProps {
   peer: ChatPeerInfo;
   currentUserId: string;
+  currentUserName?: string;
+  currentUserAvatar?: string | null;
+  onBack?: () => void;
+  autoStartCall?: "video" | "audio" | null;
 }
 
-export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
+export function ChatRoom({
+  peer,
+  currentUserId,
+  currentUserName = "You",
+  currentUserAvatar = null,
+  onBack,
+  autoStartCall = null,
+}: ChatRoomProps) {
+  const router = useRouter();
   const { isConnected, isConnecting, nexconnUserId: currentUserNexconnId, reconnect } = useNexconn();
   const { setActivePeerNexconnId, refreshCounts } = useNotification();
 
@@ -45,6 +96,60 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
   const [hasMore, setHasMore] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [isUploadingVoice, setIsUploadingVoice] = useState(false);
+
+  // Advanced Attachment & Staging State
+  const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
+  const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Individual Message Deletion State
+  const [deletedForMeSet, setDeletedForMeSet] = useState<Set<string>>(new Set());
+  const [deletedForEveryoneSet, setDeletedForEveryoneSet] = useState<Set<string>>(new Set());
+  const [selectedMessageForDelete, setSelectedMessageForDelete] = useState<ChatMessage | null>(null);
+  const [isMessageDeleteDialogOpen, setIsMessageDeleteDialogOpen] = useState(false);
+  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+
+  // Header 3-dot dropdown & Delete Chat State (Whole conversation)
+  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeletingChat, setIsDeletingChat] = useState(false);
+
+  // File Input Refs
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const docInputRef = useRef<HTMLInputElement | null>(null);
+  const otherFileInputRef = useRef<HTMLInputElement | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const headerMenuRef = useRef<HTMLDivElement | null>(null);
+
+  // Audio recording hook
+  const {
+    isRecording,
+    recordingTime,
+    audioLevels,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+    error: recorderError,
+  } = useAudioRecorder();
+
+  // One-to-One calling hook (WebRTC + Supabase Realtime signaling)
+  const call = useOneToOneCall({
+    currentUserId,
+    currentUserName,
+    currentUserAvatar,
+  });
+
+  // Handle auto-starting a call if requested
+  useEffect(() => {
+    if (autoStartCall) {
+      const timer = setTimeout(() => {
+        call.startCall(peer, autoStartCall);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [autoStartCall]);
 
   const queryRef = useRef<MessagesQuery | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -62,6 +167,17 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
   }, []);
 
+  // Close header 3-dot menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (headerMenuRef.current && !headerMenuRef.current.contains(e.target as Node)) {
+        setIsHeaderMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Suppress outside toasts for this active peer while the component is mounted
   useEffect(() => {
     setActivePeerNexconnId(peer.nexconnUserId);
@@ -70,7 +186,41 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
     };
   }, [peer.nexconnUserId, setActivePeerNexconnId]);
 
-  // 1. Initialize message history query and load first page
+  // Load deleted message IDs (Delete for Me & Delete for Everyone)
+  useEffect(() => {
+    fetchAllDeletedIds(currentUserId, peer.id).then(({ deletedForMe, deletedForEveryone }) => {
+      setDeletedForMeSet(deletedForMe);
+      setDeletedForEveryoneSet(deletedForEveryone);
+    });
+  }, [currentUserId, peer.id]);
+
+  // Realtime listener for message deletions from peer
+  useEffect(() => {
+    const supabase = createClient();
+    const conversationKey = [currentUserId, peer.id].sort().join("_");
+    const channel = supabase.channel(`chat_direct_${conversationKey}`);
+
+    channel
+      .on("broadcast", { event: "message_deleted_for_everyone" }, ({ payload }: { payload: { messageId?: string } }) => {
+        if (typeof payload?.messageId === "string") {
+          setDeletedForEveryoneSet((prev) => new Set(prev).add(payload.messageId as string));
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === payload.messageId
+                ? { ...m, isDeletedForEveryone: true, text: "🚫 This message was deleted" }
+                : m
+            )
+          );
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId, peer.id]);
+
+  // 1. Initialize message history query and load first page from Nexconn + Supabase
   useEffect(() => {
     let isMounted = true;
     setIsLoadingHistory(true);
@@ -83,59 +233,81 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
     const query = createDirectMessagesQuery(peer.nexconnUserId, 20);
     queryRef.current = query;
 
-    loadMessagePage(query, activeNexconnUserId).then(({ messages: loaded, hasNext, error }) => {
+    // Fetch from both Nexconn and Supabase in parallel
+    Promise.allSettled([
+      loadMessagePage(query, activeNexconnUserId),
+      fetchSupabaseMessages(currentUserId, peer.id, activeNexconnUserId),
+    ]).then(([nexconnRes, supabaseRes]) => {
       if (!isMounted) return;
       setIsLoadingHistory(false);
 
-      if (error) {
-        setHistoryError(error);
-      } else {
-        // Deterministically sort messages in chronological ascending order
-        const chronological = mergeAndSortMessages([], loaded);
-        setMessages(chronological);
-        setHasMore(hasNext);
-        setTimeout(() => scrollToBottom(false), 100);
+      const nexconnLoaded =
+        nexconnRes.status === "fulfilled" && !nexconnRes.value.error
+          ? nexconnRes.value.messages
+          : [];
+      const supabaseLoaded =
+        supabaseRes.status === "fulfilled" ? supabaseRes.value : [];
 
-        // Clear unread count for this peer conversation on the server and update global badge
-        clearDirectChannelUnread(peer.nexconnUserId).then(() => {
-          refreshCounts();
-        });
+      const combined = mergeAndSortMessages(supabaseLoaded, nexconnLoaded);
+      setMessages(combined);
+
+      if (nexconnRes.status === "fulfilled") {
+        setHasMore(nexconnRes.value.hasNext);
+        if (nexconnRes.value.error && combined.length === 0) {
+          setHistoryError(nexconnRes.value.error);
+        }
       }
+
+      setTimeout(() => scrollToBottom(false), 100);
+
+      clearDirectChannelUnread(peer.nexconnUserId).then(() => {
+        refreshCounts();
+      });
     });
 
     return () => {
       isMounted = false;
     };
-  }, [peer.nexconnUserId, currentUserNexconnId, currentUserId, scrollToBottom, refreshCounts]);
+  }, [peer.nexconnUserId, peer.id, currentUserNexconnId, currentUserId, scrollToBottom, refreshCounts]);
 
-  // 2. Real-time message listener with strict deduplication and chronological ordering
+  // 2. Real-time message listener with strict deduplication (Nexconn + Supabase Realtime)
   useEffect(() => {
     const activeNexconnUserId = currentUserNexconnId || currentUserId.replace(/-/g, "").toLowerCase();
 
-    const unsubscribe = subscribeDirectMessages(
+    const handleIncomingMessage = (incomingMsg: ChatMessage) => {
+      const wasNearBottom = isNearBottom();
+
+      setMessages((prev) => mergeAndSortMessages(prev, [incomingMsg]));
+
+      clearDirectChannelUnread(peer.nexconnUserId).then(() => {
+        refreshCounts();
+      });
+
+      if (wasNearBottom || incomingMsg.isSelf) {
+        setTimeout(() => scrollToBottom(true), 50);
+      }
+    };
+
+    // 2a. Nexconn subscription
+    const unsubscribeNexconn = subscribeDirectMessages(
       peer.nexconnUserId,
       activeNexconnUserId,
-      (incomingMsg) => {
-        const wasNearBottom = isNearBottom();
+      handleIncomingMessage
+    );
 
-        setMessages((prev) => mergeAndSortMessages(prev, [incomingMsg]));
-
-        // Clear unread count for this active channel immediately
-        clearDirectChannelUnread(peer.nexconnUserId).then(() => {
-          refreshCounts();
-        });
-
-        // Only auto-scroll down if user was already at/near the bottom or if they sent the message
-        if (wasNearBottom || incomingMsg.isSelf) {
-          setTimeout(() => scrollToBottom(true), 50);
-        }
-      }
+    // 2b. Supabase Realtime direct channel subscription
+    const unsubscribeSupabase = subscribeSupabaseMessages(
+      currentUserId,
+      peer.id,
+      activeNexconnUserId,
+      handleIncomingMessage
     );
 
     return () => {
-      unsubscribe();
+      unsubscribeNexconn();
+      unsubscribeSupabase();
     };
-  }, [peer.nexconnUserId, currentUserNexconnId, currentUserId, scrollToBottom, isNearBottom, refreshCounts]);
+  }, [peer.nexconnUserId, peer.id, currentUserNexconnId, currentUserId, scrollToBottom, isNearBottom, refreshCounts]);
 
   // 3. Load older historical messages (pagination)
   const handleLoadEarlier = async () => {
@@ -144,7 +316,6 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
     setIsLoadingMore(true);
     const activeNexconnUserId = currentUserNexconnId || currentUserId.replace(/-/g, "").toLowerCase();
 
-    // Save scroll height to preserve viewport position
     const container = chatContainerRef.current;
     const previousScrollHeight = container ? container.scrollHeight : 0;
 
@@ -158,7 +329,6 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
       setMessages((prev) => mergeAndSortMessages(prev, olderMessages));
       setHasMore(hasNext);
 
-      // Restore scroll offset so view doesn't jump
       requestAnimationFrame(() => {
         if (container) {
           container.scrollTop = container.scrollHeight - previousScrollHeight;
@@ -170,7 +340,7 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
   };
 
   // 4. Send message handler with optimistic update
-  const handleSendMessage = async (textToSend: string) => {
+  const handleSendMessage = async (textToSend: string, preParsedAttachment?: any) => {
     const trimmed = textToSend.trim();
     if (!trimmed) return;
 
@@ -184,7 +354,7 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
     setSendError(null);
     setInputText("");
 
-    // Create optimistic message entry
+    // Create optimistic message entry with instant attachment preview
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
     const optimisticMsg: ChatMessage = {
       id: tempId,
@@ -194,64 +364,341 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
       sentTime: Date.now(),
       status: "sending",
       isSelf: true,
+      attachmentData: preParsedAttachment || parseAttachmentMessage(trimmed) || undefined,
+      voiceData: parseVoiceMessage(trimmed) || undefined,
     };
 
     setMessages((prev) => mergeAndSortMessages(prev, [optimisticMsg]));
     setTimeout(() => scrollToBottom(true), 50);
 
-    // Dispatch to Nexconn
-    const result = await sendDirectTextMessage(
-      peer.nexconnUserId,
-      trimmed,
-      activeNexconnUserId,
-      tempId
-    );
+    // Auto unhide conversation when user sends a message
+    unhideChatForUser(currentUserId, peer.id).catch(() => {});
 
-    if (result.success && result.message) {
-      // Reconcile optimistic message with server-assigned message and maintain chronological sorting
-      setMessages((prev) => mergeAndSortMessages(prev, [result.message!]));
+    // Save to Supabase chat_messages table and broadcast via Realtime
+    const supabaseSavePromise = saveSupabaseMessage({
+      id: tempId,
+      senderId: currentUserId,
+      receiverId: peer.id,
+      text: trimmed,
+    });
+
+    // Dispatch to Nexconn if connected
+    let nexconnSuccess = false;
+    let nexconnMsg: ChatMessage | null = null;
+    let nexconnError = "";
+
+    if (isConnected) {
+      const result = await sendDirectTextMessage(
+        peer.nexconnUserId,
+        trimmed,
+        activeNexconnUserId,
+        tempId
+      );
+      nexconnSuccess = result.success;
+      nexconnMsg = result.message || null;
+      nexconnError = result.error || "";
+    }
+
+    const supabaseOk = await supabaseSavePromise.catch(() => false);
+
+    if (nexconnSuccess && nexconnMsg) {
+      setMessages((prev) => mergeAndSortMessages(prev, [nexconnMsg!]));
+    } else if (supabaseOk) {
+      setMessages((prev) =>
+        prev.map((m) => (m.tempId === tempId ? { ...m, status: "sent" } : m))
+      );
     } else {
-      // Mark as failed for user retry
       setMessages((prev) =>
         prev.map((m) =>
           m.tempId === tempId
-            ? { ...m, status: "failed", errorMessage: result.error || "Failed to deliver" }
+            ? { ...m, status: "failed", errorMessage: nexconnError || "Failed to deliver" }
             : m
         )
       );
-      setSendError(result.error || "Message delivery failed.");
+      setSendError(nexconnError || "Message delivery failed.");
     }
   };
 
   // 5. Retry a failed message
   const handleRetryMessage = (failedMsg: ChatMessage) => {
-    // Remove the failed entry and re-send
     setMessages((prev) => prev.filter((m) => m.id !== failedMsg.id));
     handleSendMessage(failedMsg.text);
   };
 
-  // 6. Handle keyboard shortcut (Enter to send, Shift+Enter for newline)
+  // 6. Send recorded voice message
+  const handleSendVoiceMessage = async () => {
+    const duration = recordingTime;
+    const blob = await stopRecording();
+    if (!blob || blob.size === 0) return;
+
+    setIsUploadingVoice(true);
+    try {
+      const supabase = createClient();
+      const fileName = `${currentUserId}/voice_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.webm`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from(CHAT_STORAGE_BUCKET)
+        .upload(fileName, blob, {
+          contentType: blob.type || "audio/webm",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw new Error(uploadError.message);
+      }
+
+      // Generate 30-day signed URL for private bucket access
+      let audioUrl = "";
+      const { data: signedData } = await supabase.storage
+        .from(CHAT_STORAGE_BUCKET)
+        .createSignedUrl(fileName, 60 * 60 * 24 * 30);
+
+      if (signedData?.signedUrl) {
+        audioUrl = signedData.signedUrl;
+      } else {
+        const { data: pubData } = supabase.storage.from(CHAT_STORAGE_BUCKET).getPublicUrl(fileName);
+        audioUrl = pubData.publicUrl;
+      }
+
+      const payload = formatVoiceMessagePayload(audioUrl, duration, blob.type, fileName);
+      await handleSendMessage(payload);
+    } catch (err: any) {
+      console.error("Voice message upload error:", err);
+      setSendError(err?.message || "Failed to upload voice message. Ensure 'chat-attachments' bucket exists.");
+    } finally {
+      setIsUploadingVoice(false);
+    }
+  };
+
+  // 7. Handle File Selection for Staging
+  const handleFilesSelected = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const newStaged: StagedFile[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      const validation = validateFile(f);
+      if (!validation.valid) {
+        setSendError(validation.error || `File ${f.name} is invalid.`);
+        continue;
+      }
+
+      const isImg = isImageFile(f.type, f.name);
+      newStaged.push({
+        file: f,
+        previewUrl: isImg ? URL.createObjectURL(f) : undefined,
+        isImage: isImg,
+      });
+    }
+
+    if (newStaged.length > 0) {
+      setStagedFiles((prev) => [...prev, ...newStaged]);
+      setSendError(null);
+    }
+  };
+
+  // 8. Remove Staged File
+  const handleRemoveStagedFile = (index: number) => {
+    setStagedFiles((prev) => {
+      const removed = prev[index];
+      if (removed && removed.previewUrl) {
+        URL.revokeObjectURL(removed.previewUrl);
+      }
+      return prev.filter((_, idx) => idx !== index);
+    });
+  };
+
+  // 9. Cancel Active Upload
+  const handleCancelUpload = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setIsUploadingAttachment(false);
+    setUploadProgress(0);
+  };
+
+  // 10. Upload & Send Staged Attachments
+  const handleSendAttachments = async () => {
+    if (stagedFiles.length === 0) return;
+
+    setIsUploadingAttachment(true);
+    setUploadProgress(10);
+    setSendError(null);
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    try {
+      const uploadedFiles: AttachmentFile[] = [];
+      const totalFiles = stagedFiles.length;
+
+      for (let i = 0; i < stagedFiles.length; i++) {
+        if (controller.signal.aborted) break;
+
+        const staged = stagedFiles[i];
+        const uploaded = await uploadChatFile(
+          staged.file,
+          currentUserId,
+          peer.id,
+          (percent) => {
+            const overall = ((i + percent / 100) / totalFiles) * 100;
+            setUploadProgress(Math.min(95, overall));
+          },
+          controller.signal
+        );
+
+        uploadedFiles.push(uploaded);
+      }
+
+      if (uploadedFiles.length > 0) {
+        setUploadProgress(100);
+        const caption = inputText.trim() || undefined;
+        const payload = formatAttachmentPayload(uploadedFiles, caption);
+
+        // Pre-parse attachment data for immediate optimistic rendering
+        const preParsed = {
+          type: "attachment" as const,
+          files: uploadedFiles,
+          caption,
+        };
+
+        // Clean up staged preview URLs
+        stagedFiles.forEach((f) => {
+          if (f.previewUrl) URL.revokeObjectURL(f.previewUrl);
+        });
+        setStagedFiles([]);
+        setInputText("");
+
+        await handleSendMessage(payload, preParsed);
+      }
+    } catch (err: any) {
+      if (err.name !== "AbortError" && err.message !== "Upload cancelled") {
+        console.error("Attachment upload error:", err);
+        setSendError(err?.message || "Failed to upload attachments. Please check connection and try again.");
+      }
+    } finally {
+      setIsUploadingAttachment(false);
+      setUploadProgress(0);
+      abortControllerRef.current = null;
+    }
+  };
+
+  // 11. Handle INDIVIDUAL Message Deletion ("Delete for Me")
+  const handleConfirmDeleteMessageForMe = async () => {
+    if (!selectedMessageForDelete) return;
+    const msgId = selectedMessageForDelete.id;
+
+    // Optimistically update set immediately
+    setDeletedForMeSet((prev) => new Set(prev).add(msgId));
+    setIsMessageDeleteDialogOpen(false);
+    setSelectedMessageForDelete(null);
+
+    await deleteMessageForMe(currentUserId, msgId);
+  };
+
+  // 12. Handle INDIVIDUAL Message Deletion ("Delete for Everyone")
+  const handleConfirmDeleteMessageForEveryone = async () => {
+    if (!selectedMessageForDelete) return;
+    const msgId = selectedMessageForDelete.id;
+
+    // Optimistically update state immediately
+    setDeletedForEveryoneSet((prev) => new Set(prev).add(msgId));
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === msgId
+          ? { ...m, isDeletedForEveryone: true, text: "🚫 This message was deleted" }
+          : m
+      )
+    );
+    setIsMessageDeleteDialogOpen(false);
+    setSelectedMessageForDelete(null);
+
+    await deleteMessageForEveryone(currentUserId, peer.id, msgId);
+  };
+
+  // 13. Handle Conversation-Level Deletion ("Delete Chat")
+  const handleConfirmDeleteChat = async () => {
+    setIsDeletingChat(true);
+    await hideChatForUser(currentUserId, peer.id);
+    setIsDeletingChat(false);
+    setIsDeleteDialogOpen(false);
+    router.push("/chat");
+  };
+
+  // 14. Handle keyboard shortcut (Enter to send, Shift+Enter for newline)
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage(inputText);
+      if (stagedFiles.length > 0) {
+        handleSendAttachments();
+      } else {
+        handleSendMessage(inputText);
+      }
     }
   };
 
   const peerInitial = (peer.fullName || peer.username || "L").charAt(0).toUpperCase();
 
+  // Filter out messages that were deleted for me
+  const visibleMessages = messages.filter((m) => !deletedForMeSet.has(m.id));
+
   return (
     <div className="flex flex-col h-[calc(100vh-8.5rem)] max-w-5xl mx-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xl shadow-brand-500/10 overflow-hidden">
+      {/* Hidden File Inputs */}
+      <input
+        type="file"
+        ref={imageInputRef}
+        onChange={(e) => {
+          handleFilesSelected(e.target.files);
+          e.target.value = "";
+        }}
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        multiple
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={docInputRef}
+        onChange={(e) => {
+          handleFilesSelected(e.target.files);
+          e.target.value = "";
+        }}
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.7z,.csv"
+        multiple
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={otherFileInputRef}
+        onChange={(e) => {
+          handleFilesSelected(e.target.files);
+          e.target.value = "";
+        }}
+        multiple
+        className="hidden"
+      />
+
       {/* Chat Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-10">
         <div className="flex items-center gap-3">
-          <Link
-            href="/learners"
-            className="p-2.5 rounded-2xl text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            title="Back to Learner Discovery"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="p-2.5 rounded-2xl text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition md:hidden"
+              title="Back to conversation list"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          ) : (
+            <Link
+              href="/chat"
+              className="p-2.5 rounded-2xl text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition md:hidden"
+              title="Back to Messages"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+          )}
 
           <div className="flex items-center gap-3">
             {peer.avatarUrl ? (
@@ -287,8 +734,31 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
           </div>
         </div>
 
-        {/* Connection status badge */}
+        {/* Action Buttons: Audio Call, Video Call, Connection Status, and 3-dot Menu */}
         <div className="flex items-center gap-2">
+          {/* Audio Call Trigger */}
+          <button
+            type="button"
+            onClick={() => call.startCall(peer, "audio")}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-200 text-xs font-bold transition shadow-xs hover:scale-105 active:scale-95"
+            title={`Start audio call with ${peer.fullName}`}
+          >
+            <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden sm:inline">Audio</span>
+          </button>
+
+          {/* Video Call Trigger */}
+          <button
+            type="button"
+            onClick={() => call.startCall(peer, "video")}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition shadow-md shadow-blue-500/25 hover:scale-105 active:scale-95"
+            title={`Start video call with ${peer.fullName}`}
+          >
+            <Video className="w-4 h-4 text-white" />
+            <span>Video Call</span>
+          </button>
+
+          {/* Connection status badge */}
           {isConnected ? (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -310,6 +780,34 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
               <span>Offline (Reconnect)</span>
             </button>
           )}
+
+          {/* Conversation 3-Dot More Menu */}
+          <div ref={headerMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setIsHeaderMenuOpen((prev) => !prev)}
+              className="p-2.5 rounded-2xl text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              title="Conversation options"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+
+            {isHeaderMenuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 rounded-2xl p-1.5 shadow-2xl border border-slate-200 dark:border-slate-800 z-30 animate-in fade-in zoom-in-95 duration-150">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsHeaderMenuOpen(false);
+                    setIsDeleteDialogOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition group"
+                >
+                  <Trash2 className="w-4 h-4 text-red-500 group-hover:scale-105 transition-transform" />
+                  <span>Delete Chat</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -382,7 +880,7 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
         )}
 
         {/* Empty Conversation Icebreaker State */}
-        {!isLoadingHistory && messages.length === 0 && (
+        {!isLoadingHistory && visibleMessages.length === 0 && (
           <div className="max-w-md mx-auto my-8 p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm text-center space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center">
               <MessageSquare className="w-6 h-6" />
@@ -420,16 +918,28 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
           </div>
         )}
 
-        {/* Message Bubbles */}
-        {messages.map((msg) => (
-          <MessageItem
-            key={msg.id}
-            message={msg}
-            peerName={peer.fullName}
-            peerInitial={peerInitial}
-            onRetry={handleRetryMessage}
-          />
-        ))}
+        {/* Individual Message Bubbles */}
+        {visibleMessages.map((msg) => {
+          const isEveryoneDeleted =
+            deletedForEveryoneSet.has(msg.id) || msg.isDeletedForEveryone;
+
+          return (
+            <MessageItem
+              key={msg.id}
+              message={{
+                ...msg,
+                isDeletedForEveryone: isEveryoneDeleted,
+              }}
+              peerName={peer.fullName}
+              peerInitial={peerInitial}
+              onRetry={handleRetryMessage}
+              onDeleteRequest={(targetMsg) => {
+                setSelectedMessageForDelete(targetMsg);
+                setIsMessageDeleteDialogOpen(true);
+              }}
+            />
+          );
+        })}
 
         <div ref={messagesEndRef} />
       </div>
@@ -451,48 +961,210 @@ export function ChatRoom({ peer, currentUserId }: ChatRoomProps) {
         </div>
       )}
 
-      {/* Message Composer Footer */}
-      <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSendMessage(inputText);
-          }}
-          className="flex items-end gap-2.5"
-        >
-          <div className="flex-1 relative">
-            <textarea
-              rows={2}
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={!isConnected}
-              placeholder={
-                isConnected
-                  ? `Message ${peer.fullName} (Press Enter to send, Shift+Enter for new line)...`
-                  : "Connecting to real-time chat..."
-              }
-              maxLength={2000}
-              className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition resize-none disabled:opacity-60"
-            />
-            {inputText.length > 1500 && (
-              <span className="absolute right-3 bottom-2 text-[10px] text-slate-400 font-mono">
-                {inputText.length}/2000
-              </span>
-            )}
-          </div>
+      {/* Staged Attachment Preview Tray */}
+      <AttachmentPreviewTray
+        files={stagedFiles}
+        onRemove={handleRemoveStagedFile}
+        isUploading={isUploadingAttachment}
+        uploadProgress={uploadProgress}
+        onCancelUpload={handleCancelUpload}
+      />
 
-          <button
-            type="submit"
-            disabled={!inputText.trim() || !isConnected}
-            className="p-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-md shadow-brand-500/25 transition disabled:opacity-50 shrink-0"
-            title="Send message"
+      {/* Message Composer Footer */}
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 relative">
+        {isRecording ? (
+          <div className="flex items-center gap-3 p-2 bg-red-50/80 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/50 rounded-2xl animate-in fade-in duration-200">
+            {/* Blinking indicator & timer */}
+            <div className="flex items-center gap-2 pl-3">
+              <span className="w-3 h-3 rounded-full bg-red-500 animate-ping shrink-0" />
+              <span className="font-mono text-sm font-bold text-red-600 dark:text-red-400">
+                {Math.floor(recordingTime / 60)}:
+                {(recordingTime % 60) < 10 ? "0" : ""}
+                {recordingTime % 60}
+              </span>
+            </div>
+
+            {/* Live Audio Visualizer Bars */}
+            <div className="flex-1 flex items-center justify-center gap-1 h-8">
+              {audioLevels.map((lvl, idx) => (
+                <span
+                  key={idx}
+                  style={{ height: `${Math.max(15, lvl * 100)}%` }}
+                  className="w-1 bg-red-500/80 dark:bg-red-400 rounded-full transition-all duration-75"
+                />
+              ))}
+            </div>
+
+            {/* Cancel Button */}
+            <button
+              type="button"
+              onClick={cancelRecording}
+              className="p-3 text-slate-500 hover:text-red-600 dark:hover:text-red-400 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition"
+              title="Cancel recording"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+
+            {/* Stop & Send Button */}
+            <button
+              type="button"
+              onClick={handleSendVoiceMessage}
+              disabled={isUploadingVoice}
+              className="p-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-md shadow-red-500/25 transition disabled:opacity-50 shrink-0"
+              title="Send voice note"
+            >
+              {isUploadingVoice ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        ) : (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (stagedFiles.length > 0) {
+                handleSendAttachments();
+              } else {
+                handleSendMessage(inputText);
+              }
+            }}
+            className="flex items-end gap-2.5 relative"
           >
-            <Send className="w-4 h-4" />
-          </button>
-        </form>
+            {/* Attachment Button & Popover Menu */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsAttachmentMenuOpen((prev) => !prev)}
+                disabled={!isConnected || isUploadingAttachment}
+                className="p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-brand-600 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-300 transition shadow-2xs shrink-0 disabled:opacity-60"
+                title="Attach photos or documents"
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
+
+              <AttachmentMenu
+                isOpen={isAttachmentMenuOpen}
+                onClose={() => setIsAttachmentMenuOpen(false)}
+                onSelectPhotos={() => imageInputRef.current?.click()}
+                onSelectDocuments={() => docInputRef.current?.click()}
+                onSelectOtherFiles={() => otherFileInputRef.current?.click()}
+              />
+            </div>
+
+            {/* Textarea */}
+            <div className="flex-1 relative">
+              <textarea
+                rows={2}
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={!isConnected || isUploadingAttachment}
+                placeholder={
+                  !isConnected
+                    ? "Connecting to real-time chat..."
+                    : stagedFiles.length > 0
+                    ? "Add a caption (optional)..."
+                    : `Message ${peer.fullName} (Press Enter to send, or tap Mic for voice)...`
+                }
+                maxLength={2000}
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition resize-none disabled:opacity-60"
+              />
+              {inputText.length > 1500 && (
+                <span className="absolute right-3 bottom-2 text-[10px] text-slate-400 font-mono">
+                  {inputText.length}/2000
+                </span>
+              )}
+            </div>
+
+            {/* Send / Mic Button */}
+            {stagedFiles.length > 0 ? (
+              <button
+                type="submit"
+                disabled={!isConnected || isUploadingAttachment}
+                className="p-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-md shadow-brand-500/25 transition disabled:opacity-50 shrink-0"
+                title="Send attachments"
+              >
+                {isUploadingAttachment ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </button>
+            ) : inputText.trim() ? (
+              <button
+                type="submit"
+                disabled={!isConnected}
+                className="p-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-md shadow-brand-500/25 transition disabled:opacity-50 shrink-0"
+                title="Send message"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={startRecording}
+                disabled={!isConnected || isUploadingVoice || isUploadingAttachment}
+                className="p-3.5 rounded-2xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition shadow-2xs shrink-0"
+                title="Record voice message"
+              >
+                {isUploadingVoice ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                ) : (
+                  <Mic className="w-4 h-4" />
+                )}
+              </button>
+            )}
+          </form>
+        )}
       </div>
+
+      {/* INDIVIDUAL Message Deletion Confirmation Dialog */}
+      <DeleteMessageDialog
+        isOpen={isMessageDeleteDialogOpen}
+        message={selectedMessageForDelete}
+        isSelf={selectedMessageForDelete?.isSelf ?? false}
+        isDeleting={isDeletingMessage}
+        onDeleteForMe={handleConfirmDeleteMessageForMe}
+        onDeleteForEveryone={handleConfirmDeleteMessageForEveryone}
+        onCancel={() => {
+          setIsMessageDeleteDialogOpen(false);
+          setSelectedMessageForDelete(null);
+        }}
+      />
+
+      {/* CONVERSATION Deletion Confirmation Dialog */}
+      <DeleteChatDialog
+        isOpen={isDeleteDialogOpen}
+        peerName={peer.fullName}
+        isDeleting={isDeletingChat}
+        onConfirm={handleConfirmDeleteChat}
+        onCancel={() => setIsDeleteDialogOpen(false)}
+      />
+
+      {/* 1-on-1 Audio/Video Call Overlays */}
+      <IncomingCallDialog
+        caller={call.activePeerInfo}
+        onAccept={call.acceptCall}
+        onDecline={call.declineCall}
+      />
+
+      <ActiveCallModal
+        callStatus={call.callStatus}
+        callType={call.callType}
+        peerInfo={call.activePeerInfo}
+        localStream={call.localStream}
+        remoteStream={call.remoteStream}
+        isMicMuted={call.isMicMuted}
+        isCameraOff={call.isCameraOff}
+        isScreenSharing={call.isScreenSharing}
+        callDuration={call.callDuration}
+        onToggleMic={call.toggleMic}
+        onToggleCamera={call.toggleCamera}
+        onToggleScreenShare={call.toggleScreenShare}
+        onEndCall={call.endCall}
+      />
     </div>
   );
 }
-

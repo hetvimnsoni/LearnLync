@@ -1,8 +1,10 @@
+
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { DEMO_PROFILES, getDemoProfile } from "@/lib/demo";
 
-// Safe fallback placeholder values to avoid unhandled runtime crashes when env variables are not yet populated
+// Safe fallback placeholder values to avoid unhandled runtime crashes
+// when environment variables are not yet populated.
 const FALLBACK_SUPABASE_URL = "https://placeholder-project.supabase.co";
 const FALLBACK_SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder_anon_key";
@@ -11,8 +13,7 @@ export async function createClient(): Promise<ReturnType<typeof createServerClie
   const cookieStore = await cookies();
   const demoCookie = cookieStore.get("learnlync_demo_user")?.value;
 
-  // If in demo mode via demo cookie, return a mock Supabase client
-  // that seamlessly supports auth, profile, and explorer queries
+  // If in demo mode via demo cookie, return a mock Supabase client.
   if (demoCookie && DEMO_PROFILES[demoCookie.toLowerCase()]) {
     const demoProfile = getDemoProfile(demoCookie);
     const demoUser = {
@@ -83,14 +84,14 @@ export async function createClient(): Promise<ReturnType<typeof createServerClie
           or: () => ({
             order: async () => ({ data: [], error: null }),
           }),
-          in: async (col: string, values: any[]) => {
+          in: (col: string, values: any[]) => {
             if (table === "profiles") {
               const list = Object.values(DEMO_PROFILES).filter((p) =>
                 values.includes(p.id)
               );
-              return { data: list, error: null };
+              return Promise.resolve({ data: list, error: null });
             }
-            return { data: [], error: null };
+            return Promise.resolve({ data: [], error: null });
           },
         }),
         insert: async (data: any) => ({
@@ -117,6 +118,7 @@ export async function createClient(): Promise<ReturnType<typeof createServerClie
 
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL || FALLBACK_SUPABASE_URL;
+
   const supabaseKey =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
@@ -133,8 +135,7 @@ export async function createClient(): Promise<ReturnType<typeof createServerClie
             cookieStore.set(name, value, options)
           );
         } catch {
-          // The `setAll` method was called from a Server Component.
-          // This can be safely ignored if you have middleware refreshing user sessions.
+          // Safe to ignore in Server Components when middleware refreshes sessions.
         }
       },
     },

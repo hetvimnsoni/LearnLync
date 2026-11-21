@@ -13,7 +13,12 @@ import {
   SentStatus,
   NCResult,
 } from "@nexconn/chat";
-import { ChatMessage } from "@/types/chat";
+import {
+  ChatMessage,
+  parseVoiceMessage,
+  parseAttachmentMessage,
+  isDeletedForEveryonePayload,
+} from "@/types/chat";
 
 /**
  * Normalizes and guarantees valid numeric timestamps (milliseconds).
@@ -119,6 +124,9 @@ export function toChatMessage(
   }
 
   const isSelf = msg.senderUserId === currentNexconnUserId;
+  const isDeleted = isDeletedForEveryonePayload(text);
+  const voiceData = !isDeleted ? parseVoiceMessage(text) || undefined : undefined;
+  const attachmentData = !isDeleted ? parseAttachmentMessage(text) || undefined : undefined;
 
   return {
     id: msg.messageId || tempId || `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -128,6 +136,9 @@ export function toChatMessage(
     sentTime: normalizeTimestamp(msg.sentTime),
     status,
     isSelf,
+    voiceData,
+    attachmentData,
+    isDeletedForEveryone: isDeleted,
   };
 }
 
@@ -312,7 +323,7 @@ export function subscribeDirectMessages(
   return () => {
     try {
       NCEngine.removeMessageHandler(handlerId);
-    } catch {}
+    } catch { }
   };
 }
 
