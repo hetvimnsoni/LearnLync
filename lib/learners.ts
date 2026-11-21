@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { toNexconnUserId } from "@/lib/nexconn/identity";
 import { PeerProfile } from "@/types/learner";
+import { DEMO_PROFILES, isPlaceholderSupabase } from "@/lib/demo";
 
 export interface GetLearnersResult {
   peers: PeerProfile[];
@@ -25,6 +26,27 @@ export async function getLearnerPeers(): Promise<GetLearnersResult> {
     } = await supabase.auth.getUser();
 
     const currentUserId = user?.id || null;
+
+    // In demo or placeholder mode, return sample peers immediately
+    if (isPlaceholderSupabase()) {
+      const demoPeers: PeerProfile[] = Object.values(DEMO_PROFILES)
+        .filter((p) => p.id !== currentUserId)
+        .map((p) => ({
+          id: p.id,
+          full_name: p.full_name,
+          username: p.username,
+          avatar_url: p.avatar_url,
+          bio: p.bio,
+          skills_offered: p.skills_offered,
+          skills_needed: p.skills_needed,
+          created_at: p.created_at,
+          nexconnUserId: toNexconnUserId(p.id),
+        }));
+      return {
+        peers: demoPeers,
+        currentUserId,
+      };
+    }
 
     // Build query selecting only public profile attributes
     // Do NOT select email or private user metadata
@@ -50,10 +72,10 @@ export async function getLearnerPeers(): Promise<GetLearnersResult> {
     }
 
     // Defensive client-level filter in addition to DB query
-    const rawPeers = (data || []).filter((p) => p.id !== currentUserId);
+    const rawPeers = (data || []).filter((p: any) => p.id !== currentUserId);
 
     // Map each peer profile to attach their deterministic Nexconn User ID
-    const peers: PeerProfile[] = rawPeers.map((profile) => ({
+    const peers: PeerProfile[] = rawPeers.map((profile: any) => ({
       id: profile.id,
       full_name: profile.full_name || "Anonymous Learner",
       username: profile.username || `learner_${profile.id.slice(0, 5)}`,
@@ -78,4 +100,3 @@ export async function getLearnerPeers(): Promise<GetLearnersResult> {
     };
   }
 }
-

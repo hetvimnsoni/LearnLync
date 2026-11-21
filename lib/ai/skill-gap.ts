@@ -3,6 +3,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { generateAIStructuredOutput } from "./gemini";
 import { SkillGapData } from "@/types/ai";
+import type { UserProfile } from "@/types/profile";
+
+type SkillGapPeer = Pick<
+  UserProfile,
+  "id" | "full_name" | "username" | "skills_offered"
+>;
 
 /**
  * AI Skill-Gap Analysis
@@ -45,7 +51,9 @@ export async function analyzeSkillGaps(params: {
         .eq("verified", true);
 
       if (assessments) {
-        demonstratedSkills = assessments.map((a) => a.skill);
+        demonstratedSkills = (assessments as { skill: string }[]).map(
+          (a) => a.skill
+        );
       }
     }
 
@@ -59,7 +67,7 @@ export async function analyzeSkillGaps(params: {
     }
 
     const { data: rawPeers } = await peerQuery;
-    const peers = rawPeers || [];
+    const peers = (rawPeers || []) as unknown as SkillGapPeer[];
     const peersSummary = peers.map((p) => ({
       id: p.id,
       name: p.full_name || p.username || "Peer",
@@ -125,7 +133,9 @@ Return a JSON object with this exact shape:
       temperature: 0.2,
     });
 
-    const peerMap = new Map(peers.map((p) => [p.id, p]));
+    const peerMap = new Map<string, SkillGapPeer>(
+      peers.map((p) => [p.id, p])
+    );
 
     const formattedMissingSkills = (aiResult.missing_skills || []).map((ms) => ({
       skill: ms.skill,

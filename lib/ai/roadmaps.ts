@@ -1,8 +1,15 @@
 "use server";
-
+import type { UserProfile } from "@/types/profile";
 import { createClient } from "@/lib/supabase/server";
 import { generateAIStructuredOutput } from "./gemini";
 import { RoadmapData, RoadmapMilestone } from "@/types/ai";
+
+
+
+type RoadmapPeer = Pick<
+  UserProfile,
+  "id" | "full_name" | "username" | "skills_offered"
+>;
 
 /**
  * Generates an AI Learning Roadmap broken into structured stages,
@@ -30,7 +37,7 @@ export async function generateAILearningRoadmap(params: {
     }
 
     const { data: rawPeers } = await peerQuery;
-    const peers = rawPeers || [];
+    const peers = (rawPeers || []) as unknown as RoadmapPeer[];
 
     const peersSummary = peers.map((p) => ({
       id: p.id,
@@ -89,7 +96,9 @@ Output a JSON object matching this exact shape:
       temperature: 0.2,
     });
 
-    const peerMap = new Map(peers.map((p) => [p.id, p]));
+    const peerMap = new Map<string, RoadmapPeer>(
+      peers.map((p) => [p.id, p])
+    );
 
     const formattedStages: RoadmapMilestone[] = (aiResult.stages || []).map((s, idx) => ({
       id: s.id || `stage-${idx + 1}`,
@@ -229,7 +238,7 @@ export async function getUserRoadmaps(): Promise<RoadmapData[]> {
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false });
 
-    return (roadmaps || []).map((r) => ({
+    return ((roadmaps || []) as RoadmapData[]).map((r) => ({
       id: r.id,
       title: r.title,
       goal: r.goal,

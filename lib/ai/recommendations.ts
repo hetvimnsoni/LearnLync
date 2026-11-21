@@ -3,6 +3,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { generateAIStructuredOutput } from "./gemini";
 import { PeerProfile } from "@/types/learner";
+import type { UserProfile } from "@/types/profile";
+
+type RecommendationProfile = Pick<
+  UserProfile,
+  | "id"
+  | "full_name"
+  | "username"
+  | "avatar_url"
+  | "bio"
+  | "skills_offered"
+  | "skills_needed"
+>;
 
 export interface RecommendedPeerResult {
   id: string;
@@ -74,7 +86,9 @@ export async function getAIProfileRecommendations(
       currentUserProfile = myProfile;
     }
 
-    const availableProfilesSummary = rawProfiles.map((p) => ({
+    const profiles = rawProfiles as unknown as RecommendationProfile[];
+
+    const availableProfilesSummary = profiles.map((p) => ({
       id: p.id,
       name: p.full_name || p.username || "Learner",
       username: p.username,
@@ -122,7 +136,9 @@ Evaluate the profiles and return a JSON object with this exact shape:
       temperature: 0.1,
     });
 
-    const profileMap = new Map(rawProfiles.map((p) => [p.id, p]));
+    const profileMap = new Map<string, RecommendationProfile>(
+      profiles.map((p) => [p.id, p])
+    );
 
     const recommendations: RecommendedPeerResult[] = [];
 
@@ -185,7 +201,7 @@ export async function getAICourseAndSkillRecommendations(
     }
 
     const { data: rawProfiles, error: dbError } = await query;
-    const profiles = rawProfiles || [];
+    const profiles = (rawProfiles || []) as unknown as RecommendationProfile[];
 
     const availablePeersSummary = profiles.map((p) => ({
       id: p.id,
@@ -242,7 +258,9 @@ Return a JSON object with this exact shape:
       temperature: 0.1,
     });
 
-    const profileMap = new Map(profiles.map((p) => [p.id, p]));
+    const profileMap = new Map<string, RecommendationProfile>(
+      profiles.map((p) => [p.id, p])
+    );
 
     const skills: SkillRecommendationResult[] = (aiResponse.recommended_skills || []).map((s) => {
       const teachers = (s.available_teacher_ids || [])

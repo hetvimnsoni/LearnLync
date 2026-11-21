@@ -134,4 +134,3 @@ export function ProfileForm({ user, profile }: { user: any; profile: any }) {
     </form>
   );
 }
-

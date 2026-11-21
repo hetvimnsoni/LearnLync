@@ -3,6 +3,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { generateAIStructuredOutput } from "./gemini";
 import { QuizData, QuizQuestion, QuizAttempt } from "@/types/ai";
+type QuizAttemptRow = Pick<
+  QuizAttempt,
+  | "id"
+  | "quiz_id"
+  | "user_id"
+  | "score"
+  | "total_questions"
+  | "user_answers"
+  | "weak_topics"
+  | "revision_suggestions"
+  | "completed_at"
+>;
 
 /**
  * Generates an AI-powered quiz tailored to a topic and difficulty level.
@@ -196,8 +208,8 @@ export async function submitQuizAttempt(params: {
         scorePercentage >= 90
           ? "advanced"
           : scorePercentage >= 70
-          ? "intermediate"
-          : "beginner";
+            ? "intermediate"
+            : "beginner";
 
       await supabase.from("skill_assessments").upsert(
         {
@@ -239,7 +251,7 @@ export async function getUserQuizHistory(): Promise<QuizAttempt[]> {
       .order("completed_at", { ascending: false })
       .limit(20);
 
-    return (attempts || []).map((a) => ({
+    return ((attempts || []) as QuizAttemptRow[]).map((a) => ({
       id: a.id,
       quiz_id: a.quiz_id,
       user_id: a.user_id,

@@ -1,0 +1,92 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background subtle ambient glow -->
+    <filter id="emblemGlow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- 3D Shadow for depth -->
+    <filter id="dropShadow3D" x="-15%" y="-15%" width="130%" height="130%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#1E1B4B" flood-opacity="0.35" />
+    </filter>
+
+    <!-- Blue to Indigo ribbon gradient -->
+    <linearGradient id="blueRibbon" x1="6" y1="8" x2="32" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="25%" stop-color="#2563EB" />
+      <stop offset="70%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#6366F1" />
+    </linearGradient>
+
+    <!-- Violet to Purple ribbon gradient -->
+    <linearGradient id="purpleRibbon" x1="42" y1="40" x2="16" y2="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7C3AED" />
+      <stop offset="45%" stop-color="#9333EA" />
+      <stop offset="80%" stop-color="#C026D3" />
+      <stop offset="100%" stop-color="#E879F9" />
+    </linearGradient>
+
+    <!-- Specular highlight for 3D curved sheen -->
+    <linearGradient id="specularSheen" x1="12" y1="8" x2="36" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.85" />
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Dark occlusion for overlapping ribbon fold -->
+    <linearGradient id="shadowFold" x1="20" y1="20" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0F172A" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Container Squircle / Rounded Backdrop -->
+  <rect x="2" y="2" width="44" height="44" rx="14" fill="#0F1426" />
+  <rect x="2" y="2" width="44" height="44" rx="14" stroke="url(#blueRibbon)" stroke-width="1.2" stroke-opacity="0.4" />
+
+  <!-- Overlapping 3D Interlocking Exchange Ribbon (Left Loop: Blue/Indigo) -->
+  <g filter="url(#dropShadow3D)">
+    <path
+      d="M14 14C18 10 26 10 30 14L34 18C37 21 37 27 34 30L30 34C26 38 18 38 14 34C10 30 10 22 14 18L24 28"
+      stroke="url(#blueRibbon)"
+      stroke-width="5.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+
+  <!-- Overlapping 3D Interlocking Exchange Ribbon (Right Loop: Violet/Purple) -->
+  <g filter="url(#dropShadow3D)">
+    <path
+      d="M34 34C30 38 22 38 18 34L14 30C11 27 11 21 14 18L18 14C22 10 30 10 34 14C38 18 38 26 34 30L24 20"
+      stroke="url(#purpleRibbon)"
+      stroke-width="5.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+
+  <!-- Specular 3D Ridge Highlight on Left Loop -->
+  <path
+    d="M15 15C18.5 11.5 25.5 11.5 29 15L32.5 18.5"
+    stroke="url(#specularSheen)"
+    stroke-width="2"
+    stroke-linecap="round"
+    opacity="0.9"
+  />
+
+  <!-- Specular 3D Ridge Highlight on Right Loop -->
+  <path
+    d="M33 33C29.5 36.5 22.5 36.5 19 33L15.5 29.5"
+    stroke="#FFFFFF"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    opacity="0.4"
+  />
+
+  <!-- Central Nexus Core Spark -->
+  <circle cx="24" cy="24" r="3.2" fill="#FFFFFF" />
+  <circle cx="24" cy="24" r="1.8" fill="#7C3AED" />
+  <circle cx="24" cy="24" r="5" stroke="#FFFFFF" stroke-width="0.8" opacity="0.5" />
+</svg>

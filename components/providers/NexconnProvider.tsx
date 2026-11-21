@@ -125,7 +125,7 @@ export function NexconnProvider({
     let isMounted = true;
 
     // Check initial user
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(({ data: { user } }: any) => {
       if (!isMounted) return;
       if (user) {
         currentSubscribedUserRef.current = user.id;
@@ -141,7 +141,7 @@ export function NexconnProvider({
     // Listen to auth state transitions
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
       const newUserId = session?.user?.id || null;
 
       if (event === "SIGNED_OUT" || !newUserId) {

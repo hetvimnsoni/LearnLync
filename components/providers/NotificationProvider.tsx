@@ -29,10 +29,10 @@ const NotificationContext = createContext<NotificationContextValue>({
   pendingRequestsCount: 0,
   toasts: [],
   activePeerNexconnId: null,
-  setActivePeerNexconnId: () => {},
-  addToast: () => {},
-  dismissToast: () => {},
-  refreshCounts: async () => {},
+  setActivePeerNexconnId: () => { },
+  addToast: () => { },
+  dismissToast: () => { },
+  refreshCounts: async () => { },
 });
 
 export function useNotification() {
@@ -286,7 +286,7 @@ export function NotificationProvider({
           }
         }
       }
-    } catch {}
+    } catch { }
   }, [isConnected, supabase, handleVerifiedIncomingRequest]);
 
   // 1. Initial count refresh, state initialization, and window focus listener
@@ -294,7 +294,7 @@ export function NotificationProvider({
     let isMounted = true;
 
     // Pre-populate shown set with existing pending request IDs to prevent false notifications on load
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }: any) => {
       if (!isMounted) return;
 
       if (user) {
@@ -310,7 +310,7 @@ export function NotificationProvider({
               shownToastRequestIdsRef.current.add(r.id);
             }
           }
-        } catch {}
+        } catch { }
       }
 
       if (isMounted) {
@@ -405,7 +405,7 @@ export function NotificationProvider({
       try {
         NCEngine.removeMessageHandler(handlerId);
         NCEngine.removeChannelHandler(channelHandlerId);
-      } catch {}
+      } catch { }
     };
   }, [isConnected, nexconnUserId, addToast, getPeerProfileByNexconnId]);
 
@@ -413,7 +413,7 @@ export function NotificationProvider({
   useEffect(() => {
     let channel: any = null;
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(({ data: { user } }: any) => {
       if (!user) return;
 
       // Scoped channel name per authenticated user

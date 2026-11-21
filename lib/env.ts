@@ -1,12 +1,14 @@
+
 /**
- * Environment configuration and validation for LearnLync (Supabase Auth & Nexconn Chat SDK)
+ * Environment configuration and validation for LearnLync
+ * (Supabase Auth, Nexconn Chat SDK and Google Gemini AI)
  */
 
 export const env = {
   // Public client-safe credentials (Nexconn)
   NEXT_PUBLIC_NEXCONN_APP_KEY: process.env.NEXT_PUBLIC_NEXCONN_APP_KEY || "",
 
-  // Private server-only credentials (Nexconn - MUST NEVER be exposed to client-side code)
+  // Private server-only credentials (Nexconn)
   get NEXCONN_APP_SECRET(): string {
     if (typeof window !== "undefined") {
       throw new Error(
@@ -16,7 +18,7 @@ export const env = {
     return process.env.NEXCONN_APP_SECRET || "";
   },
 
-  // Documented official Nexconn Singapore data center endpoints
+  // Nexconn Singapore data center endpoints
   NEXCONN_PRIMARY_API_URL:
     process.env.NEXCONN_API_ENDPOINT || "https://api.sg-light-api.com",
   NEXCONN_BACKUP_API_URL: "https://api-b.sg-light-api.com",
@@ -59,7 +61,9 @@ export function validateEnv() {
   }
 
   if (!env.NEXT_PUBLIC_SUPABASE_KEY) {
-    missing.push("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    missing.push(
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY"
+    );
   }
 
   return {

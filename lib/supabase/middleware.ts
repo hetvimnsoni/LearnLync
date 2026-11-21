@@ -6,12 +6,39 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
+  const pathname = request.nextUrl.pathname;
+  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register");
+  const isProtectedRoute = pathname.startsWith("/dashboard") || pathname.startsWith("/profile");
+
+  // Check for local demo user session
+  const demoUserCookie = request.cookies.get("learnlync_demo_user")?.value;
+  if (demoUserCookie) {
+    if (isAuthRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+    return supabaseResponse;
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseKey) {
+  // When Supabase keys are missing or still set to the placeholder,
+  // do not attempt live network calls to non-existent domains
+  if (
+    !supabaseUrl ||
+    !supabaseKey ||
+    supabaseUrl.includes("placeholder-project")
+  ) {
+    if (isProtectedRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("redirectTo", pathname);
+      return NextResponse.redirect(url);
+    }
     return supabaseResponse;
   }
 
@@ -35,14 +62,9 @@ export async function updateSession(request: NextRequest) {
   });
 
   // IMPORTANT: Do NOT run code between createServerClient and supabase.auth.getUser().
-  // A simple mistake could make it very hard to debug issues with users being randomly logged out.
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
-  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register");
-  const isProtectedRoute = pathname.startsWith("/dashboard") || pathname.startsWith("/profile");
 
   // Protect authenticated routes: redirect guest to login
   if (!user && isProtectedRoute) {
@@ -61,4 +83,3 @@ export async function updateSession(request: NextRequest) {
 
   return supabaseResponse;
 }
-

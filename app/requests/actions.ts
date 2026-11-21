@@ -242,7 +242,7 @@ export async function getExchangeRequests(): Promise<CategorizedRequests> {
 
     // 2. Collect unique participant profile IDs to batch-fetch profiles
     const profileIds = Array.from(
-      new Set(rawExchanges.flatMap((ex) => [ex.sender_id, ex.receiver_id]))
+      new Set(rawExchanges.flatMap((ex: any) => [ex.sender_id, ex.receiver_id]))
     );
 
     let profileMap = new Map<string, PeerProfile>();
@@ -254,7 +254,7 @@ export async function getExchangeRequests(): Promise<CategorizedRequests> {
         .in("id", profileIds);
 
       if (profiles) {
-        profiles.forEach((p) => {
+        profiles.forEach((p: any) => {
           profileMap.set(p.id, {
             id: p.id,
             full_name: p.full_name || "Learner",

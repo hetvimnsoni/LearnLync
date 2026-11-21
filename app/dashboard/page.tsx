@@ -10,7 +10,6 @@ import {
   Sparkles,
   BookOpen,
   ArrowRight,
-  Edit3,
   CheckCircle2,
   ArrowLeftRight,
   MessageSquare,
@@ -39,9 +38,8 @@ export default async function DashboardPage() {
   const fullName =
     profile?.full_name ||
     user.user_metadata?.full_name ||
-    user.email?.split("@")[0] ||
-    "Learner";
-  const username = profile?.username || user.email?.split("@")[0];
+    "Prachi Patel";
+  const username = profile?.username || "prachi";
   const bio = profile?.bio || "No bio added yet. Tell other learners about yourself!";
   const skillsOffered: string[] = profile?.skills_offered || ["JavaScript", "React", "Next.js"];
   const skillsNeeded: string[] = profile?.skills_needed || ["Python", "Machine Learning", "System Design"];
@@ -64,31 +62,19 @@ export default async function DashboardPage() {
           <div className="absolute top-0 right-0 w-80 h-80 bg-accent-amber/20 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-brand-400/20 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-3xl font-extrabold shadow-lg">
-                {fullName.charAt(0).toUpperCase()}
-              </div>
-              <div className="space-y-1">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-sm shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5 text-accent-amber" />
-                  <span>LearnLync Member</span>
-                </div>
-                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-                  Welcome back, {fullName}!
-                </h1>
-                <p className="text-indigo-100 text-xs sm:text-sm">{user.email}</p>
-              </div>
+          <div className="relative z-10 flex items-center gap-5 sm:gap-6">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-3xl font-extrabold shadow-lg shrink-0">
+              {fullName.charAt(0).toUpperCase()}
             </div>
-
-            <div className="flex items-center gap-3">
-              <Link
-                href="/profile"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-brand-700 text-xs sm:text-sm font-bold hover:bg-slate-50 transition shadow-lg hover:scale-105 active:scale-95"
-              >
-                <Edit3 className="w-4 h-4" />
-                <span>Edit Profile</span>
-              </Link>
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-sm shadow-sm">
+                <Sparkles className="w-3.5 h-3.5 text-accent-amber" />
+                <span>LearnLync Member</span>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
+                Welcome back, {fullName}!
+              </h1>
+              <p className="text-indigo-100 text-xs sm:text-sm">{user.email}</p>
             </div>
           </div>
         </div>

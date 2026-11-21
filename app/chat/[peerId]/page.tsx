@@ -10,13 +10,13 @@ import { ArrowLeft, UserX, AlertCircle } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 interface ChatPageProps {
-  params: {
+  params: Promise<{
     peerId: string;
-  };
+  }>;
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const { peerId } = params;
+  const { peerId } = await params;
 
   // 1. Authenticate the active user session
   const supabase = await createClient();

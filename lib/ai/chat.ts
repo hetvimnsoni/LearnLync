@@ -3,6 +3,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { generateAIChatReply } from "./gemini";
 import { AIChatMessage, AIChatRole } from "@/types/ai";
+type AIChatMessageRow = Pick<
+  AIChatMessage,
+  "id" | "conversation_id" | "role" | "content" | "metadata" | "created_at"
+>;
 
 export interface ChatAssistantResponse {
   message: string;
@@ -173,7 +177,7 @@ export async function getConversationHistory(
 
     if (error || !messages) return [];
 
-    return messages.map((m) => ({
+    return (messages as AIChatMessageRow[]).map((m) => ({
       id: m.id,
       conversation_id: m.conversation_id,
       role: m.role as AIChatRole,

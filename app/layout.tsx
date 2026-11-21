@@ -1,10 +1,11 @@
+
 import type { Metadata } from "next";
 import "./globals.css";
-import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { NexconnProvider } from "@/components/providers/NexconnProvider";
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { NotificationToasts } from "@/components/notifications/NotificationToasts";
+import { ServerAppShell } from "@/components/layout/ServerAppShell";
 import { LumiProvider } from "@/components/mascot/LumiContext";
 import { LumiFloatingLauncher } from "@/components/mascot/LumiFloatingLauncher";
 
@@ -35,8 +36,7 @@ export default function RootLayout({
           <NexconnProvider appKey={appKey}>
             <NotificationProvider>
               <LumiProvider>
-                <Navbar />
-                <div className="flex-1">{children}</div>
+                <ServerAppShell>{children}</ServerAppShell>
                 <NotificationToasts />
                 <LumiFloatingLauncher />
               </LumiProvider>

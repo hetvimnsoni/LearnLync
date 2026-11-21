@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+
 import { createClient } from "@/lib/supabase/server";
 import { getUserRoadmaps } from "@/lib/ai/roadmaps";
 import { getUserQuizHistory } from "@/lib/ai/quizzes";
@@ -9,26 +9,30 @@ import { Sparkles } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 interface AIPageProps {
-  searchParams: {
+  searchParams: Promise<{
     tab?: string;
     query?: string;
     goal?: string;
-  };
+  }>;
 }
 
 export default async function AIPage({ searchParams }: AIPageProps) {
+  const params = await searchParams;
   const supabase = await createClient();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   let userSkillsOffered: string[] = [];
+
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("skills_offered")
       .eq("id", user.id)
       .single();
+
     if (profile?.skills_offered) {
       userSkillsOffered = profile.skills_offered;
     }
@@ -41,6 +45,7 @@ export default async function AIPage({ searchParams }: AIPageProps) {
   return (
     <div className="relative min-h-[calc(100vh-4rem)]">
       <FluidAtmosphere />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
@@ -51,11 +56,14 @@ export default async function AIPage({ searchParams }: AIPageProps) {
                 <span>AI Learning Ecosystem</span>
               </span>
             </div>
+
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
               LearnLync AI Assistant
             </h1>
+
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Discover verified peers, solve learning doubts, track roadmaps, generate quizzes, and analyze your skill gaps.
+              Discover verified peers, solve learning doubts, track roadmaps,
+              generate quizzes, and analyze your skill gaps.
             </p>
           </div>
         </div>
@@ -66,8 +74,8 @@ export default async function AIPage({ searchParams }: AIPageProps) {
           currentUserSkillsOffered={userSkillsOffered}
           initialRoadmaps={roadmaps}
           initialQuizAttempts={quizAttempts}
-          initialTab={searchParams.tab || "chat"}
-          initialQuery={searchParams.query || searchParams.goal || ""}
+          initialTab={params.tab || "chat"}
+          initialQuery={params.query || params.goal || ""}
         />
       </div>
     </div>

@@ -304,7 +304,7 @@ export async function getUserCertificates(): Promise<VerifiedCertificate[]> {
       .eq("recipient_id", user.id)
       .order("issue_date", { ascending: false });
 
-    return (certs || []).map((c) => ({
+    return ((certs || []) as VerifiedCertificate[]).map((c) => ({
       id: c.id,
       exchange_id: c.exchange_id,
       type: c.type,

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getPendingIncomingCount } from "@/app/requests/actions";
-import { MessageSquare } from "lucide-react";
+import { LearnLyncLogo } from "@/components/brand/LearnLyncLogo";
 import { NavbarLinks } from "./NavbarLinks";
 
 export async function Navbar() {
@@ -23,15 +23,10 @@ export async function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2.5 font-bold text-lg text-slate-900 dark:text-white">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20">
-            <MessageSquare className="w-5 h-5" />
-          </div>
-          <span className="tracking-tight">Learn<span className="text-blue-600">Lync</span></span>
-        </Link>
+    <header className="sticky top-0 z-40 w-full h-18 sm:h-20 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+        {/* Larger Official LearnLync Logo */}
+        <LearnLyncLogo size="lg" href="/" />
 
         {/* Dynamic Navigation Actions with Live Badges */}
         <NavbarLinks
@@ -43,4 +38,3 @@ export async function Navbar() {
     </header>
   );
 }
-
