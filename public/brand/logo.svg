@@ -1,0 +1,77 @@
+<svg width="240" height="54" viewBox="0 0 240 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="logoShadow" x="-10%" y="-10%" width="120%" height="130%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="3.5" stdDeviation="3.5" flood-color="#1E1B4B" flood-opacity="0.3" />
+    </filter>
+
+    <linearGradient id="logoBlue" x1="4" y1="4" x2="36" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="25%" stop-color="#2563EB" />
+      <stop offset="70%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#6366F1" />
+    </linearGradient>
+
+    <linearGradient id="logoPurple" x1="44" y1="44" x2="12" y2="4" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7C3AED" />
+      <stop offset="45%" stop-color="#9333EA" />
+      <stop offset="80%" stop-color="#C026D3" />
+      <stop offset="100%" stop-color="#E879F9" />
+    </linearGradient>
+
+    <linearGradient id="fullWordmarkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1D4ED8" />
+      <stop offset="45%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#9333EA" />
+    </linearGradient>
+
+    <linearGradient id="logoSpecular" x1="12" y1="6" x2="34" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(3, 3)">
+    <rect x="0" y="0" width="48" height="48" rx="14" fill="#0B0F19" />
+    <rect x="0" y="0" width="48" height="48" rx="14" stroke="url(#logoBlue)" stroke-width="1.2" stroke-opacity="0.4" />
+
+    <g filter="url(#logoShadow)">
+      <path
+        d="M13 13C17 9 25 9 29 13L33 17C36 20 36 26 33 29L29 33C25 37 17 37 13 33C9 29 9 21 13 17L23 27"
+        stroke="url(#logoBlue)"
+        stroke-width="5.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M33 33C29 37 21 37 17 33L13 29C10 26 10 20 13 17L17 13C21 9 29 9 33 13C37 17 37 25 33 29L23 19"
+        stroke="url(#logoPurple)"
+        stroke-width="5.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </g>
+
+    <path
+      d="M14 14C17.5 10.5 24.5 10.5 28 14L31.5 17.5"
+      stroke="url(#logoSpecular)"
+      stroke-width="1.8"
+      stroke-linecap="round"
+    />
+
+    <circle cx="24" cy="24" r="3" fill="#FFFFFF" />
+    <circle cx="24" cy="24" r="1.6" fill="#7C3AED" />
+  </g>
+
+  <g transform="translate(64, 37)">
+    <text
+      x="0"
+      y="0"
+      font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Plus Jakarta Sans', sans-serif"
+      font-size="28"
+      font-weight="900"
+      letter-spacing="-0.035em"
+      fill="url(#fullWordmarkGrad)"
+    >LearnLync</text>
+  </g>
+</svg>
