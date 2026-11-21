@@ -53,7 +53,7 @@ export async function signUp(prevState: AuthState | null, formData: FormData): P
   }
 
   const supabase = await createClient();
-  const headersList = headers();
+  const headersList = await headers();
   const origin = headersList.get("origin") || "http://localhost:3000";
 
   const { data, error } = await supabase.auth.signUp({
@@ -98,7 +98,7 @@ export async function signOut() {
  */
 export async function getGoogleOAuthUrl(redirectTo?: string) {
   const supabase = await createClient();
-  const headersList = headers();
+  const headersList = await headers();
   const origin = headersList.get("origin") || "http://localhost:3000";
 
   const { data, error } = await supabase.auth.signInWithOAuth({

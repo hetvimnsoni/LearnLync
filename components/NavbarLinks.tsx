@@ -12,6 +12,8 @@ import {
   LogOut,
   Sparkles,
   Compass,
+  Video,
+  Calendar,
 } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
 
@@ -131,6 +133,34 @@ export function NavbarLinks({ user, profile, initialPendingCount }: NavbarLinksP
             {unreadMessagesCount > 99 ? "99+" : unreadMessagesCount}
           </span>
         )}
+      </Link>
+
+      {/* Video Meetings (Google Meet style) */}
+      <Link
+        href="/meet"
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${
+          pathname.startsWith("/meet")
+            ? "bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold"
+            : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+        }`}
+        title="Video Meetings"
+      >
+        <Video className="w-4 h-4 text-emerald-500" />
+        <span className="hidden sm:inline">Meetings</span>
+      </Link>
+
+      {/* Calendar & Schedule */}
+      <Link
+        href="/calendar"
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition ${
+          pathname.startsWith("/calendar")
+            ? "bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold"
+            : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+        }`}
+        title="Meeting Calendar"
+      >
+        <Calendar className="w-4 h-4 text-purple-500" />
+        <span className="hidden sm:inline">Calendar</span>
       </Link>
 
       {/* Requests Navigation Item with Incoming Pending Count Badge */}

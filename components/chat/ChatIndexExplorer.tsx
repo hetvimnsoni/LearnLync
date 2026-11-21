@@ -1,13 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { MessageSquare, Users, Sparkles, ArrowRight, ArrowLeftRight, CheckCircle2 } from "lucide-react";
+import {
+  MessageSquare,
+  Users,
+  Sparkles,
+  ArrowRight,
+  ArrowLeftRight,
+  MoreVertical,
+  Trash2,
+} from "lucide-react";
 import { PeerProfile } from "@/types/learner";
 import { useNexconn } from "@/components/providers/NexconnProvider";
 import { fetchUnreadChannelsMap } from "@/lib/nexconn/chat";
 import { toNexconnUserId } from "@/lib/nexconn/identity";
 import { FluidAtmosphere } from "@/components/3d/FluidAtmosphere";
+import { DeleteChatDialog } from "@/components/chat/DeleteChatDialog";
+import {
+  getLocalHiddenPeerIds,
+  fetchHiddenPeerIds,
+  hideChatForUser,
+} from "@/lib/supabase/hiddenChats";
 
 interface ChatIndexExplorerProps {
   currentUserId: string;
@@ -18,6 +32,29 @@ export function ChatIndexExplorer({ currentUserId, peers }: ChatIndexExplorerPro
   const { isConnected } = useNexconn();
   const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
 
+  // Filter peers immediately with local storage hidden IDs for zero-latency
+  const [peersList, setPeersList] = useState<PeerProfile[]>(() => {
+    const hidden = getLocalHiddenPeerIds(currentUserId);
+    return peers.filter((p) => !hidden.has(p.id));
+  });
+
+  // Active dropdown menu peer ID
+  const [activeMenuPeerId, setActiveMenuPeerId] = useState<string | null>(null);
+
+  // Peer selected for deletion
+  const [selectedPeerForDelete, setSelectedPeerForDelete] = useState<PeerProfile | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const menuContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Sync hidden chats from Supabase on mount
+  useEffect(() => {
+    fetchHiddenPeerIds(currentUserId).then((hiddenSet) => {
+      setPeersList((prev) => prev.filter((p) => !hiddenSet.has(p.id)));
+    });
+  }, [currentUserId]);
+
+  // Fetch unread message counts
   useEffect(() => {
     if (isConnected) {
       fetchUnreadChannelsMap().then((map) => {
@@ -25,6 +62,34 @@ export function ChatIndexExplorer({ currentUserId, peers }: ChatIndexExplorerPro
       });
     }
   }, [isConnected]);
+
+  // Close 3-dot dropdown menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuContainerRef.current && !menuContainerRef.current.contains(e.target as Node)) {
+        setActiveMenuPeerId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle Delete Confirmation ("Delete for Me")
+  const handleConfirmDelete = async () => {
+    if (!selectedPeerForDelete) return;
+
+    setIsDeleting(true);
+    const peerToDelete = selectedPeerForDelete;
+
+    // Optimistically remove from list immediately
+    setPeersList((prev) => prev.filter((p) => p.id !== peerToDelete.id));
+    setActiveMenuPeerId(null);
+    setSelectedPeerForDelete(null);
+    setIsDeleting(false);
+
+    // Persist hidden state to Supabase & localStorage
+    await hideChatForUser(currentUserId, peerToDelete.id);
+  };
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)]">
@@ -66,7 +131,7 @@ export function ChatIndexExplorer({ currentUserId, peers }: ChatIndexExplorerPro
         </div>
 
         {/* Conversations List */}
-        {peers.length === 0 ? (
+        {peersList.length === 0 ? (
           <div className="p-10 sm:p-14 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-xl text-center space-y-4">
             <div className="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 mx-auto flex items-center justify-center">
               <MessageSquare className="w-7 h-7" />
@@ -90,81 +155,136 @@ export function ChatIndexExplorer({ currentUserId, peers }: ChatIndexExplorerPro
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
-            {peers.map((peer) => {
+          <div ref={menuContainerRef} className="grid grid-cols-1 gap-3">
+            {peersList.map((peer) => {
               const peerNexconnId = toNexconnUserId(peer.id);
               const unreadCount = unreadMap[peerNexconnId] || 0;
               const peerInitial = (peer.full_name || peer.username || "P").charAt(0).toUpperCase();
+              const isMenuOpen = activeMenuPeerId === peer.id;
 
               return (
-                <Link
+                <div
                   key={peer.id}
-                  href={`/chat/${peer.id}`}
-                  className="group flex items-center justify-between p-4 sm:p-5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 hover:border-brand-500/60 dark:hover:border-brand-500/60 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-brand-500/10 hover:-translate-y-0.5"
+                  className="relative group bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 hover:border-brand-500/60 dark:hover:border-brand-500/60 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-brand-500/10 hover:-translate-y-0.5"
                 >
-                  <div className="flex items-center gap-4 min-w-0">
-                    {/* Avatar */}
-                    <div className="relative shrink-0">
-                      {peer.avatar_url ? (
-                        <img
-                          src={peer.avatar_url}
-                          alt={peer.full_name || "Peer avatar"}
-                          className="w-13 h-13 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform">
-                          {peerInitial}
+                  <div className="flex items-center justify-between p-4 sm:p-5">
+                    {/* Clickable Area navigating to /chat/[peerId] */}
+                    <Link
+                      href={`/chat/${peer.id}`}
+                      className="flex items-center gap-4 min-w-0 flex-1 mr-2"
+                    >
+                      {/* Avatar */}
+                      <div className="relative shrink-0">
+                        {peer.avatar_url ? (
+                          <img
+                            src={peer.avatar_url}
+                            alt={peer.full_name || "Peer avatar"}
+                            className="w-13 h-13 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform">
+                            {peerInitial}
+                          </div>
+                        )}
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-brand-600 text-white text-[10px] font-extrabold flex items-center justify-center ring-2 ring-white dark:ring-slate-900 animate-pulse">
+                            {unreadCount > 9 ? "9+" : unreadCount}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Peer Info */}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate group-hover:text-brand-600 dark:group-hover:text-brand-400 transition">
+                            {peer.full_name}
+                          </h3>
+                          <span className="font-mono text-xs text-slate-400">@{peer.username}</span>
                         </div>
-                      )}
-                      {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-brand-600 text-white text-[10px] font-extrabold flex items-center justify-center ring-2 ring-white dark:ring-slate-900 animate-pulse">
-                          {unreadCount > 9 ? "9+" : unreadCount}
+
+                        {/* Skills pills */}
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          {peer.skills_offered && peer.skills_offered.length > 0 && (
+                            <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-lg border border-emerald-200/60 dark:border-emerald-800/40">
+                              Teaches: {peer.skills_offered.slice(0, 2).join(", ")}
+                            </span>
+                          )}
+                          {peer.skills_needed && peer.skills_needed.length > 0 && (
+                            <span className="text-[11px] text-brand-700 dark:text-brand-300 font-semibold bg-brand-50 dark:bg-brand-950/40 px-2 py-0.5 rounded-lg border border-brand-200/60 dark:border-brand-800/40">
+                              Learns: {peer.skills_needed.slice(0, 2).join(", ")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* Actions: Unread count, 3-dot Menu, and Chevron */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {unreadCount > 0 ? (
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 animate-pulse">
+                          {unreadCount} new
                         </span>
-                      )}
-                    </div>
+                      ) : null}
 
-                    {/* Peer Info */}
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate group-hover:text-brand-600 dark:group-hover:text-brand-400 transition">
-                          {peer.full_name}
-                        </h3>
-                        <span className="font-mono text-xs text-slate-400">@{peer.username}</span>
+                      {/* 3-Dot More Menu */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActiveMenuPeerId(isMenuOpen ? null : peer.id);
+                          }}
+                          className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                          title="Chat options"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {isMenuOpen && (
+                          <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-slate-900 rounded-2xl p-1.5 shadow-2xl border border-slate-200 dark:border-slate-800 z-20 animate-in fade-in zoom-in-95 duration-150">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setActiveMenuPeerId(null);
+                                setSelectedPeerForDelete(peer);
+                              }}
+                              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition group"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500 group-hover:scale-105 transition-transform" />
+                              <span>Delete Chat</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Skills pills */}
-                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                        {peer.skills_offered && peer.skills_offered.length > 0 && (
-                          <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-lg border border-emerald-200/60 dark:border-emerald-800/40">
-                            Teaches: {peer.skills_offered.slice(0, 2).join(", ")}
-                          </span>
-                        )}
-                        {peer.skills_needed && peer.skills_needed.length > 0 && (
-                          <span className="text-[11px] text-brand-700 dark:text-brand-300 font-semibold bg-brand-50 dark:bg-brand-950/40 px-2 py-0.5 rounded-lg border border-brand-200/60 dark:border-brand-800/40">
-                            Learns: {peer.skills_needed.slice(0, 2).join(", ")}
-                          </span>
-                        )}
-                      </div>
+                      {/* Arrow Right button */}
+                      <Link
+                        href={`/chat/${peer.id}`}
+                        className="p-2.5 rounded-2xl text-slate-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 group-hover:bg-brand-50 dark:group-hover:bg-brand-950/60 transition"
+                      >
+                        <ArrowRight className="w-5 h-5" />
+                      </Link>
                     </div>
                   </div>
-
-                  {/* Action button */}
-                  <div className="flex items-center gap-3 shrink-0 ml-4">
-                    {unreadCount > 0 ? (
-                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 animate-pulse">
-                        {unreadCount} new
-                      </span>
-                    ) : null}
-                    <div className="p-2.5 rounded-2xl text-slate-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 group-hover:bg-brand-50 dark:group-hover:bg-brand-950/60 transition">
-                      <ArrowRight className="w-5 h-5" />
-                    </div>
-                  </div>
-                </Link>
+                </div>
               );
             })}
           </div>
         )}
       </div>
+
+      {/* Delete Chat Confirmation Dialog */}
+      <DeleteChatDialog
+        isOpen={!!selectedPeerForDelete}
+        peerName={selectedPeerForDelete?.full_name || "this user"}
+        isDeleting={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setSelectedPeerForDelete(null)}
+      />
     </div>
   );
 }
