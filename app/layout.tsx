@@ -1,5 +1,5 @@
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { NexconnProvider } from "@/components/providers/NexconnProvider";
@@ -8,6 +8,17 @@ import { NotificationToasts } from "@/components/notifications/NotificationToast
 import { ServerAppShell } from "@/components/layout/ServerAppShell";
 import { LumiProvider } from "@/components/mascot/LumiContext";
 import { LumiFloatingLauncher } from "@/components/mascot/LumiFloatingLauncher";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fbfbfd" },
+    { media: "(prefers-color-scheme: dark)", color: "#090c17" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: "LearnLync — Share What You Know. Discover What You Don't.",

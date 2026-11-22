@@ -53,7 +53,7 @@ export function UnifiedAIHub({
   return (
     <div className="space-y-6">
       {/* Top Navigation Pill Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto p-1.5 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 backdrop-blur-md scrollbar-none">
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto p-1.5 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 backdrop-blur-md no-scrollbar">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -62,13 +62,13 @@ export function UnifiedAIHub({
               key={item.id}
               type="button"
               onClick={() => setActiveTab(item.id)}
-              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition shrink-0 ${
+              className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition shrink-0 whitespace-nowrap ${
                 isActive
                   ? "bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-4 h-4 shrink-0" />
               <span>{item.label}</span>
             </button>
           );

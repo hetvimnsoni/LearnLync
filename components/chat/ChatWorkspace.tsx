@@ -72,10 +72,22 @@ export function ChatWorkspace({
   // Currently selected active peer ID for the chat room
   const [activePeerId, setActivePeerId] = useState<string | null>(() => {
     if (initialActivePeerId) return initialActivePeerId;
-    // Default to first available unhidden peer if on desktop
-    const unhidden = initialPeers.filter((p) => !hiddenSet.has(p.id));
-    return unhidden.length > 0 ? unhidden[0].id : null;
+    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+      const unhidden = initialPeers.filter((p) => !hiddenSet.has(p.id));
+      return unhidden.length > 0 ? unhidden[0].id : null;
+    }
+    return null;
   });
+
+  // On desktop screens, auto-select first conversation if none selected
+  useEffect(() => {
+    if (!initialActivePeerId && activePeerId === null && typeof window !== "undefined" && window.innerWidth >= 768) {
+      const unhidden = conversationPeers.filter((p) => !hiddenSet.has(p.id));
+      if (unhidden.length > 0) {
+        setActivePeerId(unhidden[0].id);
+      }
+    }
+  }, [initialActivePeerId]);
 
   // Dynamic peer conversations list (combining initial peers + any newly initiated chats)
   const [conversationPeers, setConversationPeers] = useState<PeerProfile[]>(initialPeers);

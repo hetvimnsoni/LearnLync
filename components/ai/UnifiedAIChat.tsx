@@ -218,7 +218,7 @@ export function UnifiedAIChat({ onSelectFeatureTab }: UnifiedAIChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-[700px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-13rem)] min-h-[520px] max-h-[760px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl overflow-hidden">
       {/* Header featuring Lumi 3D Mascot & Mode Switcher */}
       <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3.5">
@@ -417,7 +417,7 @@ export function UnifiedAIChat({ onSelectFeatureTab }: UnifiedAIChatProps) {
                 ? "Ask a doubt or paste code (e.g. 'How does async/await work in JavaScript?')"
                 : "Tell Lumi what you want to revise or practice..."
             }
-            className="flex-1 px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-inner"
+            className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-base sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-inner"
           />
           <button
             type="submit"

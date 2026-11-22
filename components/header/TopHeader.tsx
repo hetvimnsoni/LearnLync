@@ -61,32 +61,32 @@ export function TopHeader({
   const avatarInitial = (displayName || "P").charAt(0).toUpperCase();
 
   return (
-    <header className="sticky top-0 z-40 w-full h-18 sm:h-20 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md transition-colors select-none">
-      <div className="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+    <header className="sticky top-0 z-40 w-full h-16 sm:h-20 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md transition-colors select-none">
+      <div className="w-full h-full px-2.5 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* ===================================================================
             LEFT SECTION:
             - Hamburger menu button (☰ when closed, ✕ when open)
-            - Larger official LearnLync logo and wordmark
+            - Official LearnLync logo and wordmark (fluid scaling)
             =================================================================== */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-4 min-w-0">
           {showSidebarToggle && (
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="p-2.5 rounded-2xl text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="p-2 sm:p-2.5 rounded-2xl text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 shrink-0"
               aria-label={isSidebarOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={isSidebarOpen}
               title={isSidebarOpen ? "Close navigation menu" : "Open navigation menu"}
             >
               {isSidebarOpen ? (
-                <X className="w-6 h-6 transition-transform duration-200" />
+                <X className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200" />
               ) : (
-                <Menu className="w-6 h-6 transition-transform duration-200" />
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200" />
               )}
             </button>
           )}
 
-          {/* Noticeably Larger Official LearnLync Logo and Wordmark */}
+          {/* Fluid scaling LearnLync Logo */}
           <LearnLyncLogo size="lg" href={user ? "/dashboard" : "/"} />
         </div>
 
@@ -95,9 +95,9 @@ export function TopHeader({
             - Light/Dark mode toggle
             - User profile picture
             - User name
-            - Profile dropdown (keeping View Profile, Settings, Sign Out)
+            - Profile dropdown
             =================================================================== */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
           {/* Light / Dark Mode Toggle */}
           <ThemeToggle />
 
@@ -107,7 +107,7 @@ export function TopHeader({
               <button
                 type="button"
                 onClick={() => setDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-3 p-1.5 sm:px-3.5 sm:py-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800/70 transition border border-transparent hover:border-slate-200 dark:hover:border-slate-700/80"
+                className="flex items-center gap-2 sm:gap-3 p-1 sm:px-3.5 sm:py-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800/70 transition border border-transparent hover:border-slate-200 dark:hover:border-slate-700/80"
                 aria-expanded={dropdownOpen}
                 aria-haspopup="true"
               >
@@ -116,22 +116,23 @@ export function TopHeader({
                   <img
                     src={avatarUrl}
                     alt={displayName}
-                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
                   />
                 ) : (
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-brand-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-brand-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm">
                     {avatarInitial}
                   </div>
                 )}
 
                 {/* Logged-in user's name */}
-                <span className="hidden sm:inline-block text-xs sm:text-sm font-bold text-slate-900 dark:text-white max-w-[150px] truncate">
+                <span className="hidden sm:inline-block text-xs sm:text-sm font-bold text-slate-900 dark:text-white max-w-[120px] md:max-w-[150px] truncate">
                   {displayName}
                 </span>
 
                 <ChevronDown
-                  className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""
-                    }`}
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 transition-transform duration-200 ${
+                    dropdownOpen ? "rotate-180" : ""
+                  }`}
                 />
               </button>
 

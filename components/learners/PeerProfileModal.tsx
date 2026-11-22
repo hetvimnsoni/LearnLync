@@ -35,37 +35,37 @@ export function PeerProfileModal({
   const isPending = connectionStatus === "pending";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200">
       <div
-        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xl p-6 sm:p-8 space-y-6"
+        className="relative w-full max-w-2xl max-h-[92dvh] overflow-y-auto bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xl p-4 sm:p-8 space-y-4 sm:space-y-6"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Modal Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 pb-6 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 pb-4 sm:pb-6 border-b border-slate-100 dark:border-slate-800">
           {peer.avatar_url ? (
             <img
               src={peer.avatar_url}
               alt={peer.full_name || "Peer avatar"}
-              className="w-20 h-20 rounded-2xl object-cover border-2 border-brand-500/30 shadow-md"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-brand-500/30 shadow-md shrink-0"
             />
           ) : (
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-3xl shadow-lg shadow-brand-500/20">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-2xl sm:text-3xl shadow-lg shadow-brand-500/20 shrink-0">
               {initial}
             </div>
           )}
 
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <h2 className="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white truncate">
                 {peer.full_name}
               </h2>
               {isConnected ? (

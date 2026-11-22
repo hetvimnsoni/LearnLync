@@ -30,6 +30,13 @@ export function LumiFloatingLauncher() {
 
   // If user is already on /ai, they have the full screen interface, but floating launcher can still show quick status!
   const isOnAIPage = pathname === "/ai";
+  const isOnMeetPage = pathname.startsWith("/meet");
+  const isOnChatPage = pathname.startsWith("/chat");
+
+  // In full-screen video meetings, hide floating launcher to prevent blocking call controls
+  if (isOnMeetPage) {
+    return null;
+  }
 
   const handleLauncherClick = () => {
     if (isOnAIPage) {
@@ -44,7 +51,13 @@ export function LumiFloatingLauncher() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-auto">
+    <div
+      className={`fixed z-50 flex flex-col items-end pointer-events-auto transition-all ${
+        isOnChatPage
+          ? "bottom-24 right-4 sm:bottom-6 sm:right-6"
+          : "bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))] sm:bottom-6 sm:right-6"
+      }`}
+    >
       {/* Interactive Floating Mascot Button */}
       <div className="relative group">
         {/* Soft Lavender Halo Glow */}

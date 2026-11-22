@@ -59,9 +59,9 @@ export function MeetingControls({
   };
 
   return (
-    <div className="h-20 bg-slate-950/90 border-t border-slate-800 px-4 sm:px-8 flex items-center justify-between text-white shrink-0 z-20">
+    <div className="h-20 bg-slate-950/90 border-t border-slate-800 px-2 sm:px-8 flex items-center justify-between text-white shrink-0 z-20 pb-[env(safe-area-inset-bottom,0px)]">
       {/* Left: Meeting Info & Quick Copy */}
-      <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-slate-300">
+      <div className="hidden md:flex items-center gap-2 text-xs font-mono text-slate-300">
         <span className="font-bold text-slate-200">{roomCode}</span>
         <button
           type="button"
@@ -84,40 +84,40 @@ export function MeetingControls({
       </div>
 
       {/* Center: Core A/V and Screen Controls */}
-      <div className="flex items-center gap-2.5 sm:gap-3 mx-auto sm:mx-0">
+      <div className="flex items-center gap-1.5 sm:gap-3 mx-auto md:mx-0">
         {/* Mic Toggle */}
         <button
           type="button"
           onClick={onToggleMic}
-          className={`p-3.5 rounded-full transition shadow-md ${
+          className={`p-2.5 sm:p-3.5 rounded-full transition shadow-md ${
             isMicMuted
               ? "bg-red-600 text-white hover:bg-red-500"
               : "bg-slate-800 text-white hover:bg-slate-700 border border-slate-700"
           }`}
           title={isMicMuted ? "Turn on microphone" : "Turn off microphone"}
         >
-          {isMicMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          {isMicMuted ? <MicOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
         </button>
 
         {/* Camera Toggle */}
         <button
           type="button"
           onClick={onToggleCamera}
-          className={`p-3.5 rounded-full transition shadow-md ${
+          className={`p-2.5 sm:p-3.5 rounded-full transition shadow-md ${
             isCameraOff
               ? "bg-red-600 text-white hover:bg-red-500"
               : "bg-slate-800 text-white hover:bg-slate-700 border border-slate-700"
           }`}
           title={isCameraOff ? "Turn on camera" : "Turn off camera"}
         >
-          {isCameraOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
+          {isCameraOff ? <VideoOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Video className="w-4 h-4 sm:w-5 sm:h-5" />}
         </button>
 
         {/* Screen Share Toggle */}
         <button
           type="button"
           onClick={onToggleScreenShare}
-          className={`p-3.5 rounded-full transition shadow-md ${
+          className={`p-2.5 sm:p-3.5 rounded-full transition shadow-md ${
             isScreenSharing
               ? "bg-blue-600 text-white hover:bg-blue-500"
               : "bg-slate-800 text-white hover:bg-slate-700 border border-slate-700"
@@ -125,9 +125,9 @@ export function MeetingControls({
           title={isScreenSharing ? "Stop sharing screen" : "Share screen"}
         >
           {isScreenSharing ? (
-            <ScreenShareOff className="w-5 h-5" />
+            <ScreenShareOff className="w-4 h-4 sm:w-5 sm:h-5" />
           ) : (
-            <ScreenShare className="w-5 h-5" />
+            <ScreenShare className="w-4 h-4 sm:w-5 sm:h-5" />
           )}
         </button>
 
@@ -135,7 +135,7 @@ export function MeetingControls({
         <button
           type="button"
           onClick={onLeaveMeeting}
-          className="px-6 py-3 rounded-full bg-red-600 hover:bg-red-500 text-white font-bold text-sm flex items-center gap-2 shadow-lg shadow-red-600/30 transition transform hover:scale-105 ml-2"
+          className="px-3 sm:px-6 py-2.5 sm:py-3 rounded-full bg-red-600 hover:bg-red-500 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-lg shadow-red-600/30 transition transform hover:scale-105 ml-1 sm:ml-2"
           title="Leave meeting"
         >
           <PhoneOff className="w-4 h-4" />
@@ -144,38 +144,40 @@ export function MeetingControls({
       </div>
 
       {/* Right: Drawer Toggles (People & In-Meeting Chat) */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         {/* People / Participants Roster */}
         <button
           type="button"
           onClick={onToggleRoster}
-          className={`p-3 rounded-2xl relative transition ${
+          className={`p-2.5 sm:p-3 rounded-2xl relative transition ${
             isRosterOpen
               ? "bg-blue-600 text-white"
               : "bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700"
           }`}
           title="Participants"
         >
-          <Users className="w-5 h-5" />
+          <Users className="w-4 h-4 sm:w-5 sm:h-5" />
           <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-slate-700 text-[10px] font-bold border border-slate-600 text-white">
             {participantCount}
           </span>
         </button>
 
-        {/* Meeting Chat */}
+        {/* In-Meeting Chat */}
         <button
           type="button"
           onClick={onToggleChat}
-          className={`p-3 rounded-2xl relative transition ${
+          className={`p-2.5 sm:p-3 rounded-2xl relative transition ${
             isChatOpen
               ? "bg-blue-600 text-white"
               : "bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700"
           }`}
-          title="In-meeting chat"
+          title="Meeting Chat"
         >
-          <MessageSquare className="w-5 h-5" />
+          <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
           {unreadChatCount > 0 && !isChatOpen && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
+            <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-blue-600 text-[10px] font-bold text-white animate-pulse">
+              {unreadChatCount > 9 ? "9+" : unreadChatCount}
+            </span>
           )}
         </button>
       </div>

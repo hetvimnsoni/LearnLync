@@ -554,7 +554,7 @@ export function Earth3DScene({
   }
 
   return (
-    <div className="relative w-full h-[720px] lg:h-[840px] rounded-3xl overflow-hidden bg-gradient-to-br from-[#080d24] via-[#0d1538] to-[#151035] dark:from-[#060814] dark:via-[#090d21] dark:to-[#0c091f] border border-indigo-200/50 dark:border-slate-800/80 shadow-2xl select-none">
+    <div className="relative w-full h-[480px] sm:h-[620px] md:h-[720px] lg:h-[840px] rounded-3xl overflow-hidden bg-gradient-to-br from-[#080d24] via-[#0d1538] to-[#151035] dark:from-[#060814] dark:via-[#090d21] dark:to-[#0c091f] border border-indigo-200/50 dark:border-slate-800/80 shadow-2xl select-none">
       {/* Three.js Canvas Container */}
       <div ref={containerRef} className="absolute inset-0 cursor-grab active:cursor-grabbing" />
 
@@ -572,43 +572,47 @@ export function Earth3DScene({
       </div>
 
       {/* Floating Map Controls (Zoom In, Zoom Out, Reset, Pause/Resume) */}
-      <div className="absolute bottom-6 right-6 z-30 flex flex-col items-center gap-2.5">
+      <div className="absolute top-4 right-4 sm:top-auto sm:bottom-6 sm:right-6 z-30 flex flex-col items-center gap-2 sm:gap-2.5">
         <div className="flex flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-1 shadow-xl">
           <button
             type="button"
             onClick={handleZoomIn}
-            className="p-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-2 sm:p-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
             title="Zoom In (+)"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
           <div className="h-[1px] bg-slate-200 dark:bg-slate-800 my-0.5" />
           <button
             type="button"
             onClick={handleZoomOut}
-            className="p-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-2 sm:p-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
             title="Zoom Out to Full Globe (-)"
           >
-            <Minus className="w-4 h-4" />
+            <Minus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
 
         <button
           type="button"
           onClick={handleResetView}
-          className="p-2.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition shadow-xl"
+          className="p-2 sm:p-2.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition shadow-xl"
           title="Reset to Reference View"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
 
         <button
           type="button"
           onClick={toggleAutoRotate}
-          className="p-2.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition shadow-xl"
+          className="p-2 sm:p-2.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition shadow-xl"
           title={isRotating ? "Pause Earth Rotation" : "Resume Earth Rotation"}
         >
-          {isRotating ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          {isRotating ? (
+            <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          ) : (
+            <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          )}
         </button>
       </div>
 

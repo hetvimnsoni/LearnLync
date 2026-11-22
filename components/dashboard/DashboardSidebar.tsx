@@ -128,13 +128,13 @@ export function DashboardSidebar({
 
   return (
     <aside
-      className={`w-72 sm:w-80 bg-[#0B0F19] text-slate-300 border-r border-slate-800/90 flex flex-col justify-between shrink-0 select-none overflow-y-auto ${className}`}
+      className={`w-full max-w-[min(20rem,85vw)] bg-[#0B0F19] text-slate-300 border-r border-slate-800/90 flex flex-col justify-between shrink-0 select-none overflow-y-auto pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] ${className}`}
     >
       <div>
         {/* =====================================================================
             INTERNAL SIDEBAR HEADER WITH BRANDING & CLOSE (X) BUTTON
             ===================================================================== */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/5">
+        <div className="flex items-center justify-between px-4 sm:px-5 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-white/5">
           <LearnLyncLogo size="md" href="/dashboard" />
           <button
             type="button"

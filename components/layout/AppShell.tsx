@@ -100,7 +100,7 @@ export function AppShell({
 
           {/* Smooth Sliding Dark Navy Sidebar Drawer from the LEFT */}
           <div
-            className={`fixed top-0 bottom-0 left-0 z-50 w-72 sm:w-80 h-full shadow-2xl transition-transform duration-300 ease-in-out ${
+            className={`fixed top-0 bottom-0 left-0 z-50 w-[min(20rem,85vw)] h-full shadow-2xl transition-transform duration-300 ease-in-out ${
               sidebarOpen
                 ? "translate-x-0"
                 : "-translate-x-full pointer-events-none"

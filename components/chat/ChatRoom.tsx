@@ -708,13 +708,13 @@ export function ChatRoom({
       />
 
       {/* Chat Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-10">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-10">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {onBack ? (
             <button
               type="button"
               onClick={onBack}
-              className="p-2.5 rounded-2xl text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition md:hidden"
+              className="p-2 sm:p-2.5 rounded-2xl text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition md:hidden shrink-0"
               title="Back to conversation list"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -722,29 +722,29 @@ export function ChatRoom({
           ) : (
             <Link
               href="/chat"
-              className="p-2.5 rounded-2xl text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition md:hidden"
+              className="p-2 sm:p-2.5 rounded-2xl text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition md:hidden shrink-0"
               title="Back to Messages"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
           )}
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             {peer.avatarUrl ? (
               <img
                 src={peer.avatarUrl}
                 alt={peer.fullName}
-                className="w-11 h-11 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
+                className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm shrink-0"
               />
             ) : (
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-brand-500/20">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-md shadow-brand-500/20 shrink-0">
                 {peerInitial}
               </div>
             )}
 
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base leading-tight">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h2 className="font-bold text-slate-900 dark:text-white text-xs sm:text-base leading-tight truncate">
                   {peer.fullName}
                 </h2>
                 <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
@@ -752,11 +752,11 @@ export function ChatRoom({
                   <span>Peer</span>
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                <span className="font-mono">@{peer.username}</span>
-                <span className="text-slate-300 dark:text-slate-700">•</span>
-                <span className="text-[11px] text-brand-600 dark:text-brand-400 font-medium">
-                  Direct 1-on-1 Chat
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-slate-500">
+                <span className="font-mono truncate">@{peer.username}</span>
+                <span className="hidden xs:inline text-slate-300 dark:text-slate-700">•</span>
+                <span className="hidden xs:inline text-[11px] text-brand-600 dark:text-brand-400 font-medium truncate">
+                  Direct Chat
                 </span>
               </div>
             </div>
@@ -764,37 +764,37 @@ export function ChatRoom({
         </div>
 
         {/* Action Buttons: Audio Call, Video Call, Connection Status, and 3-dot Menu */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Audio Call Trigger */}
           <button
             type="button"
             onClick={() => call.startCall(peer, "audio")}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-200 text-xs font-bold transition shadow-xs hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-1.5 p-2 sm:px-3 sm:py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-200 text-xs font-bold transition shadow-xs hover:scale-105 active:scale-95"
             title={`Start audio call with ${peer.fullName}`}
           >
             <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span className="hidden sm:inline">Audio</span>
+            <span className="hidden md:inline">Audio</span>
           </button>
 
           {/* Video Call Trigger */}
           <button
             type="button"
             onClick={() => call.startCall(peer, "video")}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition shadow-md shadow-blue-500/25 hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-1.5 p-2 sm:px-3.5 sm:py-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition shadow-md shadow-blue-500/25 hover:scale-105 active:scale-95"
             title={`Start video call with ${peer.fullName}`}
           >
             <Video className="w-4 h-4 text-white" />
-            <span>Video Call</span>
+            <span className="hidden sm:inline">Video Call</span>
           </button>
 
           {/* Connection status badge */}
           {isConnected ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+            <span className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="hidden sm:inline">Nexconn Live</span>
             </span>
           ) : isConnecting ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+            <span className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
               <RefreshCw className="w-3 h-3 animate-spin" />
               <span className="hidden sm:inline">Connecting...</span>
             </span>
@@ -1001,13 +1001,13 @@ export function ChatRoom({
       />
 
       {/* Message Composer Footer */}
-      <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 relative">
+      <div className="p-2.5 sm:p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 relative pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))]">
         {isRecording ? (
-          <div className="flex items-center gap-3 p-2 bg-red-50/80 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/50 rounded-2xl animate-in fade-in duration-200">
+          <div className="flex items-center gap-2 sm:gap-3 p-2 bg-red-50/80 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/50 rounded-2xl animate-in fade-in duration-200">
             {/* Blinking indicator & timer */}
-            <div className="flex items-center gap-2 pl-3">
-              <span className="w-3 h-3 rounded-full bg-red-500 animate-ping shrink-0" />
-              <span className="font-mono text-sm font-bold text-red-600 dark:text-red-400">
+            <div className="flex items-center gap-1.5 sm:gap-2 pl-2 sm:pl-3">
+              <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500 animate-ping shrink-0" />
+              <span className="font-mono text-xs sm:text-sm font-bold text-red-600 dark:text-red-400">
                 {Math.floor(recordingTime / 60)}:
                 {(recordingTime % 60) < 10 ? "0" : ""}
                 {recordingTime % 60}
@@ -1015,7 +1015,7 @@ export function ChatRoom({
             </div>
 
             {/* Live Audio Visualizer Bars */}
-            <div className="flex-1 flex items-center justify-center gap-1 h-8">
+            <div className="flex-1 flex items-center justify-center gap-0.5 sm:gap-1 h-8">
               {audioLevels.map((lvl, idx) => (
                 <span
                   key={idx}
@@ -1029,10 +1029,10 @@ export function ChatRoom({
             <button
               type="button"
               onClick={cancelRecording}
-              className="p-3 text-slate-500 hover:text-red-600 dark:hover:text-red-400 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition"
+              className="p-2 sm:p-3 text-slate-500 hover:text-red-600 dark:hover:text-red-400 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition"
               title="Cancel recording"
             >
-              <Trash2 className="w-5 h-5" />
+              <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
             {/* Stop & Send Button */}
@@ -1040,7 +1040,7 @@ export function ChatRoom({
               type="button"
               onClick={handleSendVoiceMessage}
               disabled={isUploadingVoice}
-              className="p-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-md shadow-red-500/25 transition disabled:opacity-50 shrink-0"
+              className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-md shadow-red-500/25 transition disabled:opacity-50 shrink-0"
               title="Send voice note"
             >
               {isUploadingVoice ? (
@@ -1060,7 +1060,7 @@ export function ChatRoom({
                 handleSendMessage(inputText);
               }
             }}
-            className="flex items-end gap-2.5 relative"
+            className="flex items-end gap-2 sm:gap-2.5 relative"
           >
             {/* Attachment Button & Popover Menu */}
             <div className="relative">
@@ -1068,7 +1068,7 @@ export function ChatRoom({
                 type="button"
                 onClick={() => setIsAttachmentMenuOpen((prev) => !prev)}
                 disabled={!isConnected || isUploadingAttachment}
-                className="p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-brand-600 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-300 transition shadow-2xs shrink-0 disabled:opacity-60"
+                className="p-3 sm:p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-brand-600 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-300 transition shadow-2xs shrink-0 disabled:opacity-60"
                 title="Attach photos or documents"
               >
                 <Paperclip className="w-4 h-4" />
@@ -1096,10 +1096,10 @@ export function ChatRoom({
                     ? "Connecting to real-time chat..."
                     : stagedFiles.length > 0
                     ? "Add a caption (optional)..."
-                    : `Message ${peer.fullName} (Press Enter to send, or tap Mic for voice)...`
+                    : `Message ${peer.fullName}...`
                 }
                 maxLength={2000}
-                className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition resize-none disabled:opacity-60"
+                className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-base sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition resize-none disabled:opacity-60"
               />
               {inputText.length > 1500 && (
                 <span className="absolute right-3 bottom-2 text-[10px] text-slate-400 font-mono">
@@ -1113,7 +1113,7 @@ export function ChatRoom({
               <button
                 type="submit"
                 disabled={!isConnected || isUploadingAttachment}
-                className="p-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-md shadow-brand-500/25 transition disabled:opacity-50 shrink-0"
+                className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-md shadow-brand-500/25 transition disabled:opacity-50 shrink-0"
                 title="Send attachments"
               >
                 {isUploadingAttachment ? (
@@ -1126,7 +1126,7 @@ export function ChatRoom({
               <button
                 type="submit"
                 disabled={!isConnected}
-                className="p-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-md shadow-brand-500/25 transition disabled:opacity-50 shrink-0"
+                className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-md shadow-brand-500/25 transition disabled:opacity-50 shrink-0"
                 title="Send message"
               >
                 <Send className="w-4 h-4" />
@@ -1136,7 +1136,7 @@ export function ChatRoom({
                 type="button"
                 onClick={startRecording}
                 disabled={!isConnected || isUploadingVoice || isUploadingAttachment}
-                className="p-3.5 rounded-2xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition shadow-2xs shrink-0"
+                className="p-3 sm:p-3.5 rounded-2xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition shadow-2xs shrink-0"
                 title="Record voice message"
               >
                 {isUploadingVoice ? (

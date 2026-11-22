@@ -179,20 +179,20 @@ export function RequestsExplorer({ initialData, currentUserId }: RequestsExplore
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 p-1.5 bg-slate-100/90 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-slate-800 max-w-md">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 bg-slate-100/90 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-slate-800 w-full sm:max-w-md overflow-x-auto no-scrollbar">
         <button
           type="button"
           onClick={() => setActiveTab("incoming")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition ${
+          className={`flex-1 min-w-[90px] flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs font-bold transition whitespace-nowrap ${
             activeTab === "incoming"
               ? "bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-md"
               : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
           }`}
         >
-          <Inbox className="w-4 h-4" />
+          <Inbox className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
           <span>Incoming</span>
           {data.pendingIncomingCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-brand-600 text-white animate-pulse">
+            <span className="px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full text-[10px] font-extrabold bg-brand-600 text-white animate-pulse">
               {data.pendingIncomingCount}
             </span>
           )}
@@ -201,26 +201,26 @@ export function RequestsExplorer({ initialData, currentUserId }: RequestsExplore
         <button
           type="button"
           onClick={() => setActiveTab("outgoing")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition ${
+          className={`flex-1 min-w-[80px] flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs font-bold transition whitespace-nowrap ${
             activeTab === "outgoing"
               ? "bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-md"
               : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
           }`}
         >
-          <Send className="w-4 h-4" />
+          <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
           <span>Sent ({data.outgoing.length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("accepted")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition ${
+          className={`flex-1 min-w-[95px] flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs font-bold transition whitespace-nowrap ${
             activeTab === "accepted"
               ? "bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-md"
               : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
           }`}
         >
-          <Sparkles className="w-4 h-4 text-emerald-500" />
+          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" />
           <span>Accepted ({data.accepted.length})</span>
         </button>
       </div>

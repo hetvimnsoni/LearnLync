@@ -18,16 +18,16 @@ export function LearnLyncLogo({
 }: LearnLyncLogoProps) {
   const iconSizes = {
     sm: "w-8 h-8",
-    md: "w-10 h-10",
-    lg: "w-13 h-13 sm:w-14 sm:h-14 md:w-[56px] md:h-[56px]",
-    xl: "w-16 h-16 sm:w-18 sm:h-18",
+    md: "w-9 h-9 sm:w-10 sm:h-10",
+    lg: "w-10 h-10 min-[380px]:w-12 min-[380px]:h-12 sm:w-14 sm:h-14 md:w-[56px] md:h-[56px]",
+    xl: "w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18",
   };
 
   const textSizes = {
     sm: "text-base font-bold",
-    md: "text-xl sm:text-2xl font-extrabold",
-    lg: "text-2xl sm:text-[30px] md:text-[33px] font-black",
-    xl: "text-3xl sm:text-4xl md:text-5xl font-black",
+    md: "text-lg sm:text-xl md:text-2xl font-extrabold",
+    lg: "text-lg min-[380px]:text-xl sm:text-[28px] md:text-[33px] font-black",
+    xl: "text-2xl sm:text-3xl md:text-5xl font-black",
   };
 
   // Official 3D Emblem with Blue, Violet, and Purple gradients and dimensional specular sheen
@@ -123,7 +123,7 @@ export function LearnLyncLogo({
   );
 
   const content = (
-    <div className={`group inline-flex items-center gap-3.5 sm:gap-4 ${className}`}>
+    <div className={`group inline-flex items-center gap-2 sm:gap-3.5 md:gap-4 ${className}`}>
       {emblemIcon}
       {wordmark}
     </div>

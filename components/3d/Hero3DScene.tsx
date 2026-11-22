@@ -415,7 +415,7 @@ export function Hero3DScene() {
   }
 
   return (
-    <div className="relative w-full h-[580px] sm:h-[640px] lg:h-[700px] flex items-center justify-center overflow-hidden select-none">
+    <div className="relative w-full h-[500px] sm:h-[620px] lg:h-[700px] flex items-center justify-center overflow-hidden select-none">
       {/* Real 3D WebGL Canvas Viewport */}
       {webGLSupported ? (
         <div
@@ -438,37 +438,37 @@ export function Hero3DScene() {
       <div
         onMouseEnter={() => setHoveredNode("maya")}
         onMouseLeave={() => setHoveredNode(null)}
-        className="absolute left-3 sm:left-8 top-12 sm:top-20 z-20 max-w-[270px] sm:max-w-xs transition-transform duration-300 hover:scale-105"
+        className="absolute left-2.5 sm:left-8 top-10 sm:top-20 z-20 max-w-[210px] sm:max-w-xs transition-transform duration-300 hover:scale-105"
       >
-        <div className="rounded-2xl border border-brand-500/30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-4 sm:p-5 shadow-2xl shadow-brand-500/20">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow-md">
+        <div className="rounded-2xl border border-brand-500/30 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl p-3 sm:p-5 shadow-2xl shadow-brand-500/20">
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-md shrink-0">
               MC
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-sm text-slate-900 dark:text-white">Maya Chen</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Maya Chen</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">Machine Learning Fellow</p>
+              <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">Machine Learning Fellow</p>
             </div>
           </div>
 
-          <div className="space-y-2 text-xs">
-            <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60">
-              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase block">
+          <div className="space-y-1.5 sm:space-y-2 text-[10px] sm:text-xs">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60">
+              <span className="text-[9px] sm:text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase block">
                 TEACHING (OUTGOING)
               </span>
-              <span className="font-semibold text-slate-800 dark:text-slate-100">
+              <span className="font-semibold text-slate-800 dark:text-slate-100 truncate block">
                 Python, PyTorch &amp; ML
               </span>
             </div>
 
-            <div className="p-2 rounded-xl bg-brand-50/80 dark:bg-brand-950/60 border border-brand-200/60 dark:border-brand-800/60">
-              <span className="text-[10px] font-bold text-brand-700 dark:text-brand-300 uppercase block">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-brand-50/80 dark:bg-brand-950/60 border border-brand-200/60 dark:border-brand-800/60">
+              <span className="text-[9px] sm:text-[10px] font-bold text-brand-700 dark:text-brand-300 uppercase block">
                 SEEKING (INCOMING)
               </span>
-              <span className="font-semibold text-slate-800 dark:text-slate-100">
+              <span className="font-semibold text-slate-800 dark:text-slate-100 truncate block">
                 UI/UX Design Systems
               </span>
             </div>
@@ -480,37 +480,37 @@ export function Hero3DScene() {
       <div
         onMouseEnter={() => setHoveredNode("liam")}
         onMouseLeave={() => setHoveredNode(null)}
-        className="absolute right-3 sm:right-8 bottom-12 sm:bottom-20 z-20 max-w-[270px] sm:max-w-xs transition-transform duration-300 hover:scale-105"
+        className="absolute right-2.5 sm:right-8 bottom-14 sm:bottom-20 z-20 max-w-[210px] sm:max-w-xs transition-transform duration-300 hover:scale-105"
       >
-        <div className="rounded-2xl border border-purple-500/30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-4 sm:p-5 shadow-2xl shadow-purple-500/20">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
+        <div className="rounded-2xl border border-purple-500/30 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl p-3 sm:p-5 shadow-2xl shadow-purple-500/20">
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-md shrink-0">
               LP
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-sm text-slate-900 dark:text-white">Liam Patel</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Liam Patel</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">Design Systems Lead</p>
+              <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">Design Systems Lead</p>
             </div>
           </div>
 
-          <div className="space-y-2 text-xs">
-            <div className="p-2 rounded-xl bg-brand-50/80 dark:bg-brand-950/60 border border-brand-200/60 dark:border-brand-800/60">
-              <span className="text-[10px] font-bold text-brand-700 dark:text-brand-300 uppercase block">
+          <div className="space-y-1.5 sm:space-y-2 text-[10px] sm:text-xs">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-brand-50/80 dark:bg-brand-950/60 border border-brand-200/60 dark:border-brand-800/60">
+              <span className="text-[9px] sm:text-[10px] font-bold text-brand-700 dark:text-brand-300 uppercase block">
                 TEACHING (OUTGOING)
               </span>
-              <span className="font-semibold text-slate-800 dark:text-slate-100">
+              <span className="font-semibold text-slate-800 dark:text-slate-100 truncate block">
                 UI/UX, Figma &amp; Prototypes
               </span>
             </div>
 
-            <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60">
-              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase block">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60">
+              <span className="text-[9px] sm:text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase block">
                 SEEKING (INCOMING)
               </span>
-              <span className="font-semibold text-slate-800 dark:text-slate-100">
+              <span className="font-semibold text-slate-800 dark:text-slate-100 truncate block">
                 Python &amp; Data Analysis
               </span>
             </div>
@@ -519,15 +519,16 @@ export function Hero3DScene() {
       </div>
 
       {/* Floating Center Nexus Pill */}
-      <div className="absolute top-6 sm:top-10 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-700/80 backdrop-blur-md shadow-xl text-slate-800 dark:text-slate-200">
-          <Sparkles className="w-4 h-4 text-accent-amber animate-spin-slow" />
-          <span>Real-time Reciprocal 3D Knowledge Stream</span>
+      <div className="absolute top-3 sm:top-10 left-1/2 -translate-x-1/2 z-20 pointer-events-none max-w-[90vw]">
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-bold bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-700/80 backdrop-blur-md shadow-xl text-slate-800 dark:text-slate-200 whitespace-nowrap">
+          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent-amber animate-spin-slow shrink-0" />
+          <span className="hidden sm:inline">Real-time Reciprocal 3D Knowledge Stream</span>
+          <span className="sm:hidden">3D Knowledge Stream</span>
         </div>
       </div>
 
       {/* Bottom Floating Skill Tokens (Interactive Category Filters) */}
-      <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 w-full max-w-xl px-4">
+      <div className="absolute bottom-2.5 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 w-full max-w-xl px-2 sm:px-4">
         <div className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
           {[
             { id: "all", label: "All Skills" },
@@ -539,7 +540,7 @@ export function Hero3DScene() {
             <button
               key={token.id}
               onClick={() => setActiveSkill(token.id)}
-              className={`px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold backdrop-blur-md transition-all border ${
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-semibold backdrop-blur-md transition-all border ${
                 activeSkill === token.id
                   ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent shadow-lg scale-105"
                   : "bg-white/70 dark:bg-slate-800/70 text-slate-600 dark:text-slate-300 border-slate-200/60 dark:border-slate-700/60 hover:bg-white dark:hover:bg-slate-800"

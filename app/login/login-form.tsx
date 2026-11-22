@@ -46,7 +46,7 @@ function LoginFormInner() {
       <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-[#FFC36D]/15 rounded-full blur-2xl pointer-events-none" />
 
       {/* Main Full-Screen Split Rounded Outer Container */}
-      <div className="relative z-10 w-full max-w-[1480px] min-h-[820px] rounded-[36px] sm:rounded-[44px] bg-[#FFFCFF]/95 dark:bg-[#181438]/95 backdrop-blur-2xl border border-white/80 dark:border-white/10 shadow-[0_25px_70px_rgba(112,70,232,0.12)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.5)] overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+      <div className="relative z-10 w-full max-w-[1480px] min-h-0 lg:min-h-[820px] rounded-[28px] sm:rounded-[44px] bg-[#FFFCFF]/95 dark:bg-[#181438]/95 backdrop-blur-2xl border border-white/80 dark:border-white/10 shadow-[0_25px_70px_rgba(112,70,232,0.12)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.5)] overflow-hidden grid grid-cols-1 lg:grid-cols-12">
         {/* =========================================================================
             LEFT SIDE: BRANDING AND AUTHENTICATION (approx 42% width)
         ========================================================================== */}

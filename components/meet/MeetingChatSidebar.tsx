@@ -111,7 +111,7 @@ export function MeetingChatSidebar({
   if (!isOpen) return null;
 
   return (
-    <aside className="w-full sm:w-80 md:w-96 h-full bg-slate-900 border-l border-slate-800 flex flex-col z-30 shadow-2xl shrink-0">
+    <aside className="fixed inset-0 sm:relative sm:inset-auto z-40 sm:z-30 w-full sm:w-80 md:w-96 h-full bg-slate-900 border-l border-slate-800 flex flex-col shadow-2xl shrink-0">
       {/* Top Header & Tabs */}
       <div className="p-4 border-b border-slate-800 flex items-center justify-between">
         {/* Tab switchers */}

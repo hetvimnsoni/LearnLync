@@ -115,7 +115,7 @@ export function parseVoiceMessage(text: string): VoiceMessageData | null {
         mimeType: parsed.mimeType || "audio/webm",
       };
     }
-  } catch {}
+  } catch { }
 
   return null;
 }
@@ -165,7 +165,7 @@ export function parseAttachmentMessage(text: string): AttachmentMessageData | nu
         caption: typeof parsed.caption === "string" ? parsed.caption : undefined,
       };
     }
-  } catch {}
+  } catch { }
 
   return null;
 }

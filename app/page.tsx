@@ -42,13 +42,13 @@ export default async function Home() {
           {/* Header Typography */}
           <div className="text-center space-y-6 max-w-4xl mx-auto mb-6">
             {/* Tagline Pill */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-white/80 dark:bg-slate-900/80 text-brand-700 dark:text-brand-300 border border-brand-200/80 dark:border-brand-800/80 backdrop-blur-md shadow-md">
-              <Sparkles className="w-4 h-4 text-accent-amber animate-spin-slow" />
-              <span>Share what you know. Discover what you don&apos;t.</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-white/80 dark:bg-slate-900/80 text-brand-700 dark:text-brand-300 border border-brand-200/80 dark:border-brand-800/80 backdrop-blur-md shadow-md max-w-full">
+              <Sparkles className="w-4 h-4 text-accent-amber animate-spin-slow shrink-0" />
+              <span className="truncate">Share what you know. Discover what you don&apos;t.</span>
             </div>
 
             {/* Headline */}
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.08]">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1] sm:leading-[1.08]">
               Your next skill starts with{" "}
               <span className="bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 dark:from-brand-400 dark:via-indigo-300 dark:to-purple-300 bg-clip-text text-transparent">
                 someone you haven&apos;t met yet.
@@ -56,7 +56,7 @@ export default async function Home() {
             </h1>
 
             {/* Supporting Copy */}
-            <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
               Meet people who have the skills you want — and share the knowledge only you have. Powered by real human conversations and live 1-on-1 Nexconn chat.
             </p>
 

@@ -155,8 +155,8 @@ export function ProfileHeader({
       </div>
 
       {/* 2. Main Profile Identity Row */}
-      <div className="px-6 sm:px-8 pb-8 pt-0 relative">
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 -mt-16 sm:-mt-20">
+      <div className="px-4 sm:px-8 pb-6 sm:pb-8 pt-0 relative">
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 sm:gap-6 -mt-14 sm:-mt-20">
           {/* Avatar and Primary Identity */}
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5">
             <div className="relative group">

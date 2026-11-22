@@ -180,11 +180,11 @@ export function CalendarView({
         {/* View Mode Switcher & Schedule Meeting Action */}
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* View Mode Buttons */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl text-xs font-bold">
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl text-xs font-bold overflow-x-auto no-scrollbar max-w-full">
             <button
               type="button"
               onClick={() => setViewMode("month")}
-              className={`px-3 py-1.5 rounded-xl transition ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl transition whitespace-nowrap ${
                 viewMode === "month"
                   ? "bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
@@ -195,7 +195,7 @@ export function CalendarView({
             <button
               type="button"
               onClick={() => setViewMode("week")}
-              className={`px-3 py-1.5 rounded-xl transition ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl transition whitespace-nowrap ${
                 viewMode === "week"
                   ? "bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
@@ -206,7 +206,7 @@ export function CalendarView({
             <button
               type="button"
               onClick={() => setViewMode("day")}
-              className={`px-3 py-1.5 rounded-xl transition ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl transition whitespace-nowrap ${
                 viewMode === "day"
                   ? "bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
@@ -217,13 +217,14 @@ export function CalendarView({
             <button
               type="button"
               onClick={() => setViewMode("all")}
-              className={`px-3 py-1.5 rounded-xl transition ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl transition whitespace-nowrap ${
                 viewMode === "all"
                   ? "bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
               }`}
             >
-              All Meetings
+              <span className="hidden sm:inline">All Meetings</span>
+              <span className="sm:hidden">All</span>
             </button>
           </div>
 
@@ -241,22 +242,23 @@ export function CalendarView({
 
       {/* MONTH VIEW */}
       {viewMode === "month" && (
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl overflow-hidden">
-          {/* Day Names Header */}
-          <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 text-center bg-slate-50/50 dark:bg-slate-850/50 py-3">
-            {weekdayNames.map((w, idx) => (
-              <span
-                key={idx}
-                className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-              >
-                <span className="hidden sm:inline">{w}</span>
-                <span className="sm:hidden">{w.slice(0, 3)}</span>
-              </span>
-            ))}
-          </div>
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl overflow-x-auto">
+          <div className="min-w-[580px] sm:min-w-0">
+            {/* Day Names Header */}
+            <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 text-center bg-slate-50/50 dark:bg-slate-850/50 py-3">
+              {weekdayNames.map((w, idx) => (
+                <span
+                  key={idx}
+                  className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                >
+                  <span className="hidden sm:inline">{w}</span>
+                  <span className="sm:hidden">{w.slice(0, 3)}</span>
+                </span>
+              ))}
+            </div>
 
-          {/* Days Grid */}
-          <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-slate-200 dark:divide-slate-800">
+            {/* Days Grid */}
+            <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-slate-200 dark:divide-slate-800">
             {monthDays.map((item, idx) => {
               const dayMeetings = meetingsByDate.get(item.dateStr) || [];
               const isToday = item.dateStr === todayStr;
@@ -335,6 +337,7 @@ export function CalendarView({
             })}
           </div>
         </div>
+      </div>
       )}
 
       {/* WEEK VIEW */}

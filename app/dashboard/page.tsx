@@ -120,25 +120,25 @@ export default async function DashboardPage() {
       {/* Background Fluid Atmosphere */}
       <FluidAtmosphere />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
         {/* Welcome Dimensional Hero Banner */}
-        <div className="relative rounded-3xl p-8 sm:p-10 text-white shadow-2xl overflow-hidden bg-gradient-to-r from-brand-600 via-indigo-700 to-purple-800 border border-white/20">
+        <div className="relative rounded-3xl p-5 sm:p-8 md:p-10 text-white shadow-2xl overflow-hidden bg-gradient-to-r from-brand-600 via-indigo-700 to-purple-800 border border-white/20">
           <div className="absolute top-0 right-0 w-80 h-80 bg-accent-amber/20 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-brand-400/20 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 flex items-center gap-5 sm:gap-6">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-3xl font-extrabold shadow-lg shrink-0">
+          <div className="relative z-10 flex items-center gap-4 sm:gap-6">
+            <div className="w-13 h-13 sm:w-16 md:w-20 sm:h-16 md:h-20 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-2xl sm:text-3xl font-extrabold shadow-lg shrink-0">
               {fullName.charAt(0).toUpperCase()}
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-sm shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-accent-amber" />
+                <Sparkles className="w-3.5 h-3.5 text-accent-amber shrink-0" />
                 <span>LearnLync Member</span>
               </div>
-              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
+              <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight truncate">
                 Welcome back, {fullName}!
               </h1>
-              <p className="text-indigo-100 text-xs sm:text-sm">{user.email}</p>
+              <p className="text-indigo-100 text-xs sm:text-sm truncate">{user.email}</p>
             </div>
           </div>
         </div>
