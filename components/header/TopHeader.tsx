@@ -61,7 +61,7 @@ export function TopHeader({
   const avatarInitial = (displayName || "P").charAt(0).toUpperCase();
 
   return (
-    <header className="sticky top-0 z-40 w-full h-14 min-[375px]:h-16 sm:h-20 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md transition-colors select-none">
+    <header className="sticky top-0 z-40 w-full h-14 min-[375px]:h-16 sm:h-20 border-b border-indigo-100/70 dark:border-slate-800 bg-gradient-to-r from-white/90 via-[#F8FAFF]/90 to-[#FAF7FF]/90 dark:from-[#0B0F19]/95 dark:via-[#0B0F19]/95 dark:to-[#0B0F19]/95 backdrop-blur-xl shadow-[0_4px_20px_-4px_rgba(99,102,241,0.05)] dark:shadow-none transition-colors select-none">
       <div className="w-full h-full px-2.5 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* ===================================================================
             LEFT SECTION:
@@ -138,7 +138,7 @@ export function TopHeader({
 
               {/* Profile Dropdown Menu (No Edit Profile option) */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-[#0f1424] border border-slate-200/90 dark:border-slate-800 shadow-xl py-2 z-50 text-slate-800 dark:text-slate-200 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-gradient-to-b from-white via-[#FCFAFF] to-[#F7F9FF] dark:from-[#0f1424] dark:via-[#0f1424] dark:to-[#0f1424] border border-indigo-100/80 dark:border-slate-800 shadow-[0_12px_36px_rgba(99,102,241,0.08)] dark:shadow-xl py-2 z-50 text-slate-800 dark:text-slate-200 animate-in fade-in zoom-in-95 duration-150 backdrop-blur-xl">
                   {/* User Info Header */}
                   <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
                     <p className="text-sm font-bold text-slate-900 dark:text-white truncate">

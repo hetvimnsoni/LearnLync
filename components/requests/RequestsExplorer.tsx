@@ -179,7 +179,7 @@ export function RequestsExplorer({ initialData, currentUserId }: RequestsExplore
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 bg-slate-100/90 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-slate-800 w-full sm:max-w-md overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl border border-indigo-100/80 dark:border-slate-800 w-full sm:max-w-md overflow-x-auto no-scrollbar shadow-xs">
         <button
           type="button"
           onClick={() => setActiveTab("incoming")}
@@ -273,7 +273,7 @@ export function RequestsExplorer({ initialData, currentUserId }: RequestsExplore
             return (
               <div
                 key={req.id}
-                className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 shadow-sm hover:shadow-md transition space-y-4"
+                className="rounded-3xl border border-indigo-100/80 dark:border-slate-800 bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl p-6 shadow-[0_4px_20px_-4px_rgba(112,70,232,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(112,70,232,0.08)] dark:shadow-sm dark:hover:shadow-md transition space-y-4"
               >
                 {/* Header: User Info & Status */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

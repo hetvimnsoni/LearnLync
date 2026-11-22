@@ -53,7 +53,7 @@ export function UnifiedAIHub({
   return (
     <div className="space-y-6">
       {/* Top Navigation Pill Bar */}
-      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto p-1.5 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 backdrop-blur-md no-scrollbar">
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto p-1.5 rounded-2xl bg-white/80 dark:bg-slate-900/70 border border-indigo-100/80 dark:border-slate-800 backdrop-blur-md shadow-xs no-scrollbar">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;

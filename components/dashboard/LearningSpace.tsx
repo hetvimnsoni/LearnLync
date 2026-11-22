@@ -110,7 +110,7 @@ export function LearningSpace({ requestsData, currentUserId }: LearningSpaceProp
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         {/* Metric 1: Learning Connections */}
-        <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 shadow-sm hover:shadow-md transition space-y-3">
+        <div className="rounded-3xl border border-indigo-100/80 dark:border-slate-800 bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl p-6 shadow-[0_4px_20px_-4px_rgba(112,70,232,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(112,70,232,0.08)] dark:shadow-sm dark:hover:shadow-md transition space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
               Partnerships
@@ -139,7 +139,7 @@ export function LearningSpace({ requestsData, currentUserId }: LearningSpaceProp
         </div>
 
         {/* Metric 2: Active Conversations */}
-        <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 shadow-sm hover:shadow-md transition space-y-3">
+        <div className="rounded-3xl border border-indigo-100/80 dark:border-slate-800 bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl p-6 shadow-[0_4px_20px_-4px_rgba(112,70,232,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(112,70,232,0.08)] dark:shadow-sm dark:hover:shadow-md transition space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
               Real-time Chat
@@ -168,7 +168,7 @@ export function LearningSpace({ requestsData, currentUserId }: LearningSpaceProp
         </div>
 
         {/* Metric 3: Pending Proposals */}
-        <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 shadow-sm hover:shadow-md transition space-y-3">
+        <div className="rounded-3xl border border-indigo-100/80 dark:border-slate-800 bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl p-6 shadow-[0_4px_20px_-4px_rgba(112,70,232,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(112,70,232,0.08)] dark:shadow-sm dark:hover:shadow-md transition space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
               Exchange Proposals
@@ -198,7 +198,7 @@ export function LearningSpace({ requestsData, currentUserId }: LearningSpaceProp
       </div>
 
       {/* AI Learning Assistant Quick Launch Hub */}
-      <div className="rounded-3xl border border-brand-200/80 dark:border-brand-900/60 bg-gradient-to-br from-brand-50/50 via-white to-indigo-50/40 dark:from-slate-900/90 dark:via-slate-900/90 dark:to-brand-950/40 backdrop-blur-xl p-6 sm:p-7 shadow-sm space-y-4">
+      <div className="rounded-3xl border border-indigo-100/90 dark:border-brand-900/60 bg-gradient-to-br from-[#F3EEFF]/60 via-white to-[#EAF3FF]/50 dark:from-slate-900/90 dark:via-slate-900/90 dark:to-brand-950/40 backdrop-blur-xl p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(112,70,232,0.06)] dark:shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center shadow-md">
@@ -263,7 +263,7 @@ export function LearningSpace({ requestsData, currentUserId }: LearningSpaceProp
       </div>
 
       {/* Recent Learning Activity Feed */}
-      <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 sm:p-7 shadow-sm space-y-4">
+      <div className="rounded-3xl border border-indigo-100/80 dark:border-slate-800 bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(112,70,232,0.06)] dark:shadow-sm space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
           <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
             <Clock className="w-4 h-4 text-brand-500" />

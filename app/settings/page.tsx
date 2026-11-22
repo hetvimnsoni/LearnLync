@@ -60,7 +60,7 @@ export default async function SettingsPage() {
         {/* Settings Sections */}
         <div className="space-y-6">
           {/* Section 1: Account Information */}
-          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl rounded-3xl border border-indigo-100/80 dark:border-slate-800 p-6 sm:p-8 shadow-[0_4px_24px_-4px_rgba(112,70,232,0.06)] dark:shadow-sm space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="p-2.5 rounded-2xl bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-400">
                 <User className="w-5 h-5" />
@@ -118,7 +118,7 @@ export default async function SettingsPage() {
           </div>
 
           {/* Section 2: Privacy & Peer Visibility */}
-          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl rounded-3xl border border-indigo-100/80 dark:border-slate-800 p-6 sm:p-8 shadow-[0_4px_24px_-4px_rgba(112,70,232,0.06)] dark:shadow-sm space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="p-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
                 <Shield className="w-5 h-5" />
@@ -167,7 +167,7 @@ export default async function SettingsPage() {
           </div>
 
           {/* Section 3: Notification Alerts */}
-          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl rounded-3xl border border-indigo-100/80 dark:border-slate-800 p-6 sm:p-8 shadow-[0_4px_24px_-4px_rgba(112,70,232,0.06)] dark:shadow-sm space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="p-2.5 rounded-2xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400">
                 <Bell className="w-5 h-5" />

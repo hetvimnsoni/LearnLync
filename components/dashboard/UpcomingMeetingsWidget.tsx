@@ -72,7 +72,7 @@ export function UpcomingMeetingsWidget({
   };
 
   return (
-    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 p-4 sm:p-8 shadow-sm space-y-6">
+    <div className="bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl rounded-3xl border border-indigo-100/80 dark:border-slate-800 p-4 sm:p-8 shadow-[0_4px_24px_-4px_rgba(112,70,232,0.06)] dark:shadow-sm space-y-6">
       {/* Widget Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-3">
@@ -98,7 +98,7 @@ export function UpcomingMeetingsWidget({
           <button
             type="button"
             onClick={() => setIsScheduleModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-500/20 transition hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white shadow-md shadow-indigo-500/25 transition hover:scale-105 active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Schedule</span>

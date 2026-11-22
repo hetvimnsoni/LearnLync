@@ -105,7 +105,7 @@ export function ProfileHeader({
   };
 
   return (
-    <div className="relative rounded-3xl overflow-hidden border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 shadow-xl dark:shadow-2xl backdrop-blur-xl transition-colors">
+    <div className="relative rounded-3xl overflow-hidden border border-indigo-100/90 dark:border-slate-800 bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/90 dark:via-slate-900/90 dark:to-slate-900/90 shadow-[0_8px_32px_-4px_rgba(112,70,232,0.06)] dark:shadow-2xl backdrop-blur-xl transition-colors">
       {/* 1. Cover Image Banner */}
       <div className="relative h-48 sm:h-64 w-full bg-slate-100 dark:bg-slate-950 overflow-hidden">
         <img

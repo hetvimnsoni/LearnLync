@@ -143,7 +143,7 @@ export function CalendarView({
   return (
     <div className="space-y-6">
       {/* Calendar Navigation & Mode Controls Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-3xl bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl border border-indigo-100/80 dark:border-slate-800 shadow-[0_4px_24px_-4px_rgba(112,70,232,0.06)] dark:shadow-sm">
         {/* Current Period Display & Prev/Next */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl">
@@ -242,7 +242,7 @@ export function CalendarView({
 
       {/* MONTH VIEW */}
       {viewMode === "month" && (
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl overflow-x-auto">
+        <div className="bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl rounded-3xl border border-indigo-100/80 dark:border-slate-800 shadow-[0_8px_32px_-4px_rgba(112,70,232,0.06)] dark:shadow-xl overflow-x-auto">
           <div className="min-w-[580px] sm:min-w-0">
             {/* Day Names Header */}
             <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 text-center bg-slate-50/50 dark:bg-slate-850/50 py-3">

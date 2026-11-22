@@ -4,11 +4,17 @@
 
 @layer base {
   :root {
-    --background: #fbfbfd;
+    --background: #faf8fe;
     --foreground: #0c0f1d;
-    --card: #ffffff;
-    --card-border: #e2e8f0;
+    --card: rgba(255, 255, 255, 0.88);
+    --card-border: rgba(226, 232, 248, 0.85);
     --muted: #64748b;
+    
+    /* LearnLync Soft Light-Mode Gradient Tokens */
+    --ll-lavender: #F3EEFF;
+    --ll-soft-blue: #EAF3FF;
+    --ll-pale-violet: #EDE7FF;
+    --ll-white: #FFFFFF;
   }
 
   html.dark {
@@ -25,12 +31,27 @@
 
   body {
     color: var(--foreground);
-    background: var(--background);
+    background-color: #FAF8FE;
+    /* Ethereal, delicate multi-layer radial gradient background for Light Mode */
+    background-image: 
+      radial-gradient(ellipse 80% 60% at 5% 0%, rgba(234, 243, 255, 0.75) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 50% at 95% 5%, rgba(243, 238, 255, 0.85) 0%, transparent 60%),
+      radial-gradient(circle 600px at 50% 35%, rgba(237, 231, 255, 0.45) 0%, transparent 70%),
+      radial-gradient(ellipse 75% 50% at 85% 90%, rgba(234, 243, 255, 0.65) 0%, transparent 60%),
+      radial-gradient(ellipse 65% 50% at 10% 95%, rgba(243, 238, 255, 0.7) 0%, transparent 60%);
+    background-attachment: fixed;
+    background-size: 100% 100%;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.25s ease, color 0.25s ease;
     overflow-x: hidden;
+  }
+
+  /* Strict Dark Mode Isolation: clear all light-mode background gradient meshes */
+  html.dark body {
+    background-color: var(--background);
+    background-image: none;
   }
 
   /* Safe-area insets helper utilities */
@@ -68,8 +89,8 @@
 /* Custom subtle grid and beam patterns */
 .bg-grid-pattern {
   background-size: 40px 40px;
-  background-image: linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+  background-image: linear-gradient(to right, rgba(99, 102, 241, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99, 102, 241, 0.035) 1px, transparent 1px);
 }
 
 .dark .bg-grid-pattern {
@@ -78,9 +99,47 @@
 }
 
 .radial-glow {
-  background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15), transparent 70%);
+  background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.12), transparent 70%);
 }
 
 .dark .radial-glow {
   background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.25), transparent 70%);
+}
+
+@layer components {
+  /* Subtle light-mode gradient card surface with backdrop blur */
+  .ll-card-surface {
+    background-color: rgba(255, 255, 255, 0.88);
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(243, 238, 255, 0.45) 50%, rgba(234, 243, 255, 0.45) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(226, 232, 248, 0.9);
+    box-shadow: 0 4px 20px -2px rgba(112, 70, 232, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+  }
+
+  .dark .ll-card-surface {
+    background-color: rgba(15, 20, 36, 0.85);
+    background-image: none;
+    border-color: rgba(30, 41, 59, 0.8);
+    box-shadow: none;
+  }
+
+  /* Tasteful blue-to-violet gradient for primary interactive elements */
+  .ll-btn-primary {
+    background-image: linear-gradient(135deg, #2563EB 0%, #4F46E5 50%, #7C3AED 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px -1px rgba(99, 102, 241, 0.35);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .ll-btn-primary:hover {
+    background-image: linear-gradient(135deg, #1D4ED8 0%, #4338CA 50%, #6D28D9 100%);
+    box-shadow: 0 6px 20px -1px rgba(99, 102, 241, 0.45);
+    transform: translateY(-1px);
+  }
+
+  .ll-btn-primary:active {
+    transform: translateY(0px);
+    box-shadow: 0 2px 8px -1px rgba(99, 102, 241, 0.35);
+  }
 }

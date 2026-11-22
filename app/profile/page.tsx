@@ -47,7 +47,7 @@ export default async function ProfilePage() {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] bg-slate-50/60 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
+    <div className="relative min-h-[calc(100vh-4rem)] bg-transparent dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       <FluidAtmosphere />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Navigation Breadcrumb */}

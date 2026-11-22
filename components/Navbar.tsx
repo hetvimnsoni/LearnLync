@@ -23,7 +23,7 @@ export async function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full h-18 sm:h-20 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full h-14 min-[375px]:h-16 sm:h-20 border-b border-indigo-100/70 dark:border-slate-800 bg-gradient-to-r from-white/90 via-[#F8FAFF]/90 to-[#FAF7FF]/90 dark:from-[#0B0F19]/95 dark:via-[#0B0F19]/95 dark:to-[#0B0F19]/95 backdrop-blur-xl shadow-[0_4px_20px_-4px_rgba(99,102,241,0.05)] dark:shadow-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
         {/* Larger Official LearnLync Logo */}
         <LearnLyncLogo size="lg" href="/" />

@@ -128,18 +128,18 @@ export function DashboardSidebar({
 
   return (
     <aside
-      className={`w-full max-w-[min(20rem,85vw)] bg-[#0B0F19] text-slate-300 border-r border-slate-800/90 flex flex-col justify-between shrink-0 select-none overflow-y-auto pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] ${className}`}
+      className={`w-full max-w-[min(20rem,85vw)] bg-gradient-to-b from-[#FFFFFF] via-[#FAF8FF] to-[#F3EEFF] dark:from-[#0B0F19] dark:via-[#0B0F19] dark:to-[#0B0F19] text-slate-700 dark:text-slate-300 border-r border-indigo-100/90 dark:border-slate-800/90 flex flex-col justify-between shrink-0 select-none overflow-y-auto pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] shadow-2xl ${className}`}
     >
       <div>
         {/* =====================================================================
             INTERNAL SIDEBAR HEADER WITH BRANDING & CLOSE (X) BUTTON
             ===================================================================== */}
-        <div className="flex items-center justify-between px-4 sm:px-5 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-white/5">
+        <div className="flex items-center justify-between px-4 sm:px-5 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-indigo-100/60 dark:border-white/5">
           <LearnLyncLogo size="md" href="/dashboard" />
           <button
             type="button"
             onClick={onClose || onNavigate}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
             aria-label="Close navigation sidebar"
           >
             <X className="w-5 h-5" />
@@ -149,17 +149,17 @@ export function DashboardSidebar({
         {/* =====================================================================
             TOP TAGLINE BLOCK: EXACT PLACEMENT ABOVE DASHBOARD NAVIGATION ITEM
             ===================================================================== */}
-        <div className="px-5 pt-6 pb-6 text-center border-b border-white/5 space-y-1.5 bg-gradient-to-b from-indigo-950/30 via-slate-900/10 to-transparent">
+        <div className="px-5 pt-6 pb-6 text-center border-b border-indigo-100/60 dark:border-white/5 space-y-1.5 bg-gradient-to-b from-indigo-50/70 via-purple-50/40 to-transparent dark:from-indigo-950/30 dark:via-slate-900/10 dark:to-transparent">
           {/* Main Tagline: Bold, attractive typography with subtle purple/blue accents */}
-          <h2 className="text-[14px] font-extrabold tracking-tight text-white leading-tight">
+          <h2 className="text-[14px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
             <span>Learn Together. </span>
-            <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-300 dark:to-purple-400 bg-clip-text text-transparent">
               Grow Together.
             </span>
           </h2>
 
           {/* Secondary Tagline: Slightly smaller, elegant italic typography */}
-          <p className="text-[12px] italic tracking-wide text-indigo-300/85 font-medium">
+          <p className="text-[12px] italic tracking-wide text-indigo-600/90 dark:text-indigo-300/85 font-medium">
             Exchange. Explore. Evolve.
           </p>
         </div>
@@ -178,16 +178,16 @@ export function DashboardSidebar({
                 onClick={handleLinkClick}
                 className={`group flex items-center justify-between px-4 py-3 rounded-2xl text-xs sm:text-sm font-medium transition-all duration-200 ${
                   item.isActive
-                    ? "bg-gradient-to-r from-brand-600/25 to-purple-600/20 text-white font-semibold border-l-4 border-brand-500 shadow-sm"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    ? "bg-gradient-to-r from-brand-500/15 to-purple-500/10 dark:from-brand-600/25 dark:to-purple-600/20 text-brand-700 dark:text-white font-semibold border-l-4 border-brand-500 shadow-xs dark:shadow-sm"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/5"
                 }`}
               >
                 <div className="flex items-center gap-3.5">
                   <Icon
                     className={`w-5 h-5 transition-transform duration-200 group-hover:scale-110 ${
                       item.isActive
-                        ? "text-brand-400"
-                        : "text-slate-400 group-hover:text-slate-200"
+                        ? "text-brand-600 dark:text-brand-400"
+                        : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200"
                     }`}
                   />
                   <span>{item.name}</span>
@@ -200,7 +200,7 @@ export function DashboardSidebar({
       </div>
 
       {/* Item 7: Logout Navigation Item */}
-      <div className="p-4 border-t border-white/5">
+      <div className="p-4 border-t border-indigo-100/60 dark:border-white/5">
         <form
           action={signOut}
           onSubmit={() => {
@@ -209,9 +209,9 @@ export function DashboardSidebar({
         >
           <button
             type="submit"
-            className="w-full group flex items-center gap-3.5 px-4 py-3 rounded-2xl text-xs sm:text-sm font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-950/25 transition-all duration-200 text-left"
+            className="w-full group flex items-center gap-3.5 px-4 py-3 rounded-2xl text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-950/25 transition-all duration-200 text-left"
           >
-            <LogOut className="w-5 h-5 text-slate-400 group-hover:text-rose-400 transition-transform duration-200 group-hover:-translate-x-0.5" />
+            <LogOut className="w-5 h-5 text-slate-400 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-transform duration-200 group-hover:-translate-x-0.5" />
             <span>Logout</span>
           </button>
         </form>

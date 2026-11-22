@@ -614,7 +614,7 @@ export function LearnersMapExplorer({
 
               {/* Skill Filter Popover Dropdown */}
               {isSkillFilterOpen && (
-                <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 max-h-72 overflow-y-auto rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200 dark:border-white/15 shadow-2xl p-4 z-40 space-y-3 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 max-h-72 overflow-y-auto rounded-3xl bg-gradient-to-b from-white via-[#FCFAFF] to-[#F7F9FF] dark:from-slate-900/95 dark:via-slate-900/95 dark:to-slate-900/95 backdrop-blur-2xl border border-indigo-100/80 dark:border-white/15 shadow-2xl p-4 z-40 space-y-3 animate-in fade-in zoom-in-95 duration-150">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/10">
                     <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                       <Filter className="w-3.5 h-3.5 text-brand-600 dark:text-purple-400" />
@@ -709,7 +709,7 @@ export function LearnersMapExplorer({
         >
           {/* FLOATING LEARNER PROFILE CARD (Smooth Responsive Overlay When Selected) */}
           {activePeer && isProfileCardOpen && (
-            <div className="pointer-events-auto absolute bottom-3 left-3 right-3 sm:bottom-6 sm:left-6 sm:right-auto sm:w-88 max-w-full sm:max-w-sm z-20 rounded-3xl bg-white/95 dark:bg-slate-900/90 backdrop-blur-2xl border border-purple-200/80 dark:border-white/10 shadow-2xl p-4 sm:p-5 text-slate-900 dark:text-white space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <div className="pointer-events-auto absolute bottom-3 left-3 right-3 sm:bottom-6 sm:left-6 sm:right-auto sm:w-88 max-w-full sm:max-w-sm z-20 rounded-3xl bg-gradient-to-br from-white/95 via-[#FCFAFF]/95 to-[#F4F8FF]/90 dark:from-slate-900/90 dark:via-slate-900/90 dark:to-slate-900/90 backdrop-blur-2xl border border-indigo-100/90 dark:border-white/10 shadow-[0_12px_40px_-8px_rgba(112,70,232,0.12)] dark:shadow-2xl p-4 sm:p-5 text-slate-900 dark:text-white space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-200">
               {/* Header: Photo, Name, Username, Location, Navigation & Close Button */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">

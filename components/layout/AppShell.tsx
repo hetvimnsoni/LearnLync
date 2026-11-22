@@ -67,7 +67,7 @@ export function AppShell({
   const showSidebarToggle = !isLandingPage && (user !== null || isAppSection);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] relative overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-transparent dark:bg-[var(--background)] text-[var(--foreground)] relative overflow-x-hidden">
       {/* ===================================================================
           1. TOP HEADER
           - LEFT: Hamburger menu button (☰ when closed, ✕ when open) + Larger LearnLync logo

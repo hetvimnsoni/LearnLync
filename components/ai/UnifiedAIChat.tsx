@@ -218,9 +218,9 @@ export function UnifiedAIChat({ onSelectFeatureTab }: UnifiedAIChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-13rem)] min-h-[520px] max-h-[760px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-13rem)] min-h-[520px] max-h-[760px] bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 backdrop-blur-xl rounded-3xl border border-indigo-100/80 dark:border-slate-800 shadow-[0_8px_32px_-4px_rgba(112,70,232,0.06)] dark:shadow-xl overflow-hidden">
       {/* Header featuring Lumi 3D Mascot & Mode Switcher */}
-      <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 sm:p-5 border-b border-indigo-100/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3.5">
           <div className="relative shrink-0">
             <LumiCharacter

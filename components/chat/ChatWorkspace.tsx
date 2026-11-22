@@ -251,18 +251,18 @@ export function ChatWorkspace({
 
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
         {/* Main 2-Column Chat Container */}
-        <div className="flex h-[calc(100vh-6.5rem)] rounded-3xl overflow-hidden border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-2xl">
+        <div className="flex h-[calc(100vh-6.5rem)] rounded-3xl overflow-hidden border border-indigo-100/90 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl shadow-[0_12px_40px_-8px_rgba(112,70,232,0.08)] dark:shadow-2xl">
           
           {/* ========================================================================= */}
           {/* LEFT COLUMN: Conversation List & Search (Hidden on mobile if peer active) */}
           {/* ========================================================================= */}
           <div
-            className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 shrink-0 ${
+            className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-indigo-100/80 dark:border-slate-800 bg-gradient-to-b from-white via-[#FCFAFF] to-[#F7F9FF] dark:from-slate-900/95 dark:via-slate-900/95 dark:to-slate-900/95 shrink-0 ${
               activePeerId ? "hidden md:flex" : "flex"
             }`}
           >
             {/* Header: Title, Realtime status, and New Chat button */}
-            <div className="p-4 sm:p-5 border-b border-slate-200/80 dark:border-slate-800 space-y-3">
+            <div className="p-4 sm:p-5 border-b border-indigo-100/70 dark:border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
@@ -278,7 +278,7 @@ export function ChatWorkspace({
                 <button
                   type="button"
                   onClick={() => setIsNewChatModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-brand-600 text-white hover:bg-brand-500 transition shadow-sm hover:scale-105 active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white shadow-md shadow-indigo-500/25 transition hover:scale-105 active:scale-95"
                   title="Start a new chat with any learner"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -384,8 +384,8 @@ export function ChatWorkspace({
                       onClick={() => setActivePeerId(peer.id)}
                       className={`relative flex items-center justify-between p-3.5 sm:p-4 cursor-pointer transition group ${
                         isSelected
-                          ? "bg-brand-50/80 dark:bg-brand-950/40 border-l-4 border-brand-600"
-                          : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                          ? "bg-gradient-to-r from-indigo-50/90 to-purple-50/60 dark:from-brand-950/40 dark:to-brand-950/40 border-l-4 border-brand-600 shadow-2xs"
+                          : "hover:bg-indigo-50/30 dark:hover:bg-slate-800/40"
                       }`}
                     >
                       {/* Avatar & Info */}

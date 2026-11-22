@@ -29,10 +29,10 @@ export function LearnerCard({ peer, connectionStatus = "none", onSelectPeer, onR
       onClick={() => onSelectPeer(peer)}
       className={`group relative rounded-3xl border backdrop-blur-xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between ${
         isConnected
-          ? "border-emerald-300/80 dark:border-emerald-700/60 bg-white/90 dark:bg-slate-900/90 hover:border-emerald-500 hover:shadow-emerald-500/10"
+          ? "border-emerald-300/80 dark:border-emerald-700/60 bg-gradient-to-br from-white/95 via-[#F0FDF4]/90 to-[#ECFDF5]/85 dark:from-slate-900/90 dark:via-slate-900/90 dark:to-slate-900/90 hover:border-emerald-500 hover:shadow-emerald-500/10"
           : isPending
-          ? "border-amber-300/80 dark:border-amber-700/60 bg-white/85 dark:bg-slate-900/85 hover:border-amber-500 hover:shadow-amber-500/10"
-          : "border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:border-brand-400 dark:hover:border-brand-500/70 hover:shadow-brand-500/10"
+          ? "border-amber-300/80 dark:border-amber-700/60 bg-gradient-to-br from-white/95 via-[#FFFBEB]/90 to-[#FEF3C7]/85 dark:from-slate-900/85 dark:via-slate-900/85 dark:to-slate-900/85 hover:border-amber-500 hover:shadow-amber-500/10"
+          : "border-indigo-100/90 dark:border-slate-800 bg-gradient-to-br from-white/95 via-[#FCFAFF]/90 to-[#F4F8FF]/85 dark:from-slate-900/80 dark:via-slate-900/80 dark:to-slate-900/80 hover:border-brand-400 dark:hover:border-brand-500/70 hover:shadow-brand-500/10"
       }`}
     >
       <div className="space-y-4">
