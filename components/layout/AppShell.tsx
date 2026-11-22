@@ -56,6 +56,10 @@ export function AppShell({
     pathname.startsWith("/learners") ||
     pathname.startsWith("/chat") ||
     pathname.startsWith("/requests") ||
+    pathname.startsWith("/ai") ||
+    pathname.startsWith("/certificates") ||
+    pathname.startsWith("/calendar") ||
+    pathname.startsWith("/meet") ||
     pathname.startsWith("/profile") ||
     pathname.startsWith("/settings");
 

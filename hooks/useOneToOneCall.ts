@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getRtcConfiguration } from "@/lib/webrtc/iceConfig";
+import { saveSupabaseMessage } from "@/lib/supabase/chatMessages";
+import { formatCallPayload } from "@/types/chat";
 
 export type CallType = "audio" | "video";
 export type CallStatus =
@@ -24,12 +26,14 @@ export interface UseOneToOneCallProps {
   currentUserId: string;
   currentUserName: string;
   currentUserAvatar?: string | null;
+  onCallEvent?: (targetPeerId: string, payload: string) => void;
 }
 
 export function useOneToOneCall({
   currentUserId,
   currentUserName,
   currentUserAvatar,
+  onCallEvent,
 }: UseOneToOneCallProps) {
   const [callStatus, setCallStatus] = useState<CallStatus>("idle");
   const [callType, setCallType] = useState<CallType>("video");
@@ -49,13 +53,81 @@ export function useOneToOneCall({
   const screenTrackRef = useRef<MediaStreamTrack | null>(null);
   const originalVideoTrackRef = useRef<MediaStreamTrack | null>(null);
 
+  // Call record and persistence tracking refs
+  const callerIdRef = useRef<string | null>(null);
+  const calleeIdRef = useRef<string | null>(null);
+  const callTypeRef = useRef<CallType>("video");
+  const callConnectedRef = useRef<boolean>(false);
+  const callDurationRef = useRef<number>(0);
+  const callSessionIdRef = useRef<string | null>(null);
+  const recordedSessionIds = useRef<Set<string>>(new Set());
+  const ringingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const onCallEventRef = useRef<((targetPeerId: string, payload: string) => void) | undefined>(onCallEvent);
+
+  useEffect(() => {
+    onCallEventRef.current = onCallEvent;
+  }, [onCallEvent]);
+
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   const supabase = useRef(createClient()).current;
 
+  // Persists call record (missed, completed, declined, no_answer) to Supabase chat_messages
+  const recordCallActivity = useCallback(
+    async (
+      status: "missed" | "completed" | "declined" | "no_answer",
+      duration = 0
+    ) => {
+      const sessionId = callSessionIdRef.current;
+      if (!sessionId || recordedSessionIds.current.has(sessionId)) return;
+      recordedSessionIds.current.add(sessionId);
+
+      const callerId = callerIdRef.current;
+      const calleeId = calleeIdRef.current;
+      if (!callerId || !calleeId) return;
+
+      const payload = formatCallPayload({
+        callType: callTypeRef.current || "video",
+        status,
+        duration,
+        timestamp: Date.now(),
+      });
+
+      const targetPeerId = callerId === currentUserId ? calleeId : callerId;
+
+      // 1. If onCallEvent callback provided (e.g. by ChatRoom), route through chat messaging pipeline
+      if (onCallEventRef.current) {
+        try {
+          onCallEventRef.current(targetPeerId, payload);
+        } catch (err) {
+          console.warn("Could not dispatch onCallEvent callback:", err);
+        }
+        return;
+      }
+
+      // 2. Otherwise persist directly to Supabase chat_messages table using currentUserId to obey RLS
+      try {
+        await saveSupabaseMessage({
+          id: `call_${sessionId}`,
+          senderId: currentUserId,
+          receiverId: targetPeerId,
+          text: payload,
+        });
+      } catch (err) {
+        console.warn("Could not save call record to Supabase:", err);
+      }
+    },
+    [currentUserId]
+  );
+
   // Cleanup helper
   const cleanupCall = useCallback(() => {
+    if (ringingTimerRef.current) {
+      clearTimeout(ringingTimerRef.current);
+      ringingTimerRef.current = null;
+    }
+
     if (durationTimerRef.current) {
       clearInterval(durationTimerRef.current);
       durationTimerRef.current = null;
@@ -90,6 +162,7 @@ export function useOneToOneCall({
     setIsCameraOff(false);
     setIsScreenSharing(false);
     setCallDuration(0);
+    callDurationRef.current = 0;
   }, [supabase]);
 
   // Derive deterministic channel name between two Supabase user IDs
@@ -137,10 +210,16 @@ export function useOneToOneCall({
       pc.onconnectionstatechange = () => {
         if (pc.connectionState === "connected") {
           setCallStatus("connected");
+          callConnectedRef.current = true;
+          if (ringingTimerRef.current) {
+            clearTimeout(ringingTimerRef.current);
+            ringingTimerRef.current = null;
+          }
           // Start duration timer
           if (!durationTimerRef.current) {
             durationTimerRef.current = setInterval(() => {
-              setCallDuration((prev) => prev + 1);
+              callDurationRef.current += 1;
+              setCallDuration(callDurationRef.current);
             }, 1000);
           }
         } else if (
@@ -206,7 +285,15 @@ export function useOneToOneCall({
           return;
         }
 
-        // Set incoming call state
+        // Set incoming call state and session tracking
+        callerIdRef.current = data.callerId;
+        calleeIdRef.current = currentUserId;
+        callTypeRef.current = data.callType || "video";
+        callConnectedRef.current = false;
+        callDurationRef.current = 0;
+        callSessionIdRef.current =
+          data.sessionId || `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
         setActivePeerId(data.callerId);
         setActivePeerInfo({
           id: data.callerId,
@@ -227,6 +314,14 @@ export function useOneToOneCall({
   // Initiate an Outgoing Call
   const startCall = useCallback(
     async (peer: { id: string; fullName: string; avatarUrl?: string | null }, type: CallType) => {
+      const newSessionId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      callerIdRef.current = currentUserId;
+      calleeIdRef.current = peer.id;
+      callTypeRef.current = type;
+      callConnectedRef.current = false;
+      callDurationRef.current = 0;
+      callSessionIdRef.current = newSessionId;
+
       setErrorMessage(null);
       setCallType(type);
       setActivePeerId(peer.id);
@@ -237,6 +332,23 @@ export function useOneToOneCall({
         callType: type,
       });
       setCallStatus("calling");
+
+      // Auto-cancel and mark as no-answer if not picked up in 45s
+      if (ringingTimerRef.current) clearTimeout(ringingTimerRef.current);
+      ringingTimerRef.current = setTimeout(() => {
+        recordCallActivity("no_answer", 0);
+        setErrorMessage("No answer from peer.");
+        if (channelRef.current) {
+          channelRef.current.send({
+            type: "broadcast",
+            event: "call_ended",
+            payload: { senderId: currentUserId, reason: "no_answer" },
+          });
+        }
+        cleanupCall();
+        setCallStatus("ended");
+        setTimeout(() => setCallStatus("idle"), 2500);
+      }, 45000);
 
       try {
         // 1. Acquire local audio/video media
@@ -256,10 +368,19 @@ export function useOneToOneCall({
         // 3. Listen for receiver responses on this direct channel
         channel
           .on("broadcast", { event: "call_accepted" }, async () => {
+            if (ringingTimerRef.current) {
+              clearTimeout(ringingTimerRef.current);
+              ringingTimerRef.current = null;
+            }
             setCallStatus("connecting");
             await createPeerConnection(peer.id, true);
           })
           .on("broadcast", { event: "call_rejected" }, (p: any) => {
+            if (ringingTimerRef.current) {
+              clearTimeout(ringingTimerRef.current);
+              ringingTimerRef.current = null;
+            }
+            recordCallActivity("declined", 0);
             const reason = p.payload?.reason === "busy" ? "Peer is currently busy." : "Call declined.";
             setErrorMessage(reason);
             cleanupCall();
@@ -267,6 +388,15 @@ export function useOneToOneCall({
             setTimeout(() => setCallStatus("idle"), 2500);
           })
           .on("broadcast", { event: "call_ended" }, () => {
+            if (ringingTimerRef.current) {
+              clearTimeout(ringingTimerRef.current);
+              ringingTimerRef.current = null;
+            }
+            if (callConnectedRef.current) {
+              recordCallActivity("completed", callDurationRef.current);
+            } else {
+              recordCallActivity("missed", 0);
+            }
             cleanupCall();
             setCallStatus("ended");
             setTimeout(() => setCallStatus("idle"), 1500);
@@ -301,6 +431,7 @@ export function useOneToOneCall({
                     callerAvatar: currentUserAvatar,
                     targetUserId: peer.id,
                     callType: type,
+                    sessionId: newSessionId,
                   },
                 });
                 setTimeout(() => supabase.removeChannel(calleeInbox), 3000);
@@ -308,6 +439,10 @@ export function useOneToOneCall({
             }
           });
       } catch (err: any) {
+        if (ringingTimerRef.current) {
+          clearTimeout(ringingTimerRef.current);
+          ringingTimerRef.current = null;
+        }
         console.error("Failed to start call:", err);
         setErrorMessage(
           err.name === "NotAllowedError"
@@ -318,7 +453,7 @@ export function useOneToOneCall({
         setCallStatus("idle");
       }
     },
-    [currentUserId, currentUserName, currentUserAvatar, createPeerConnection, cleanupCall, supabase]
+    [currentUserId, currentUserName, currentUserAvatar, createPeerConnection, cleanupCall, recordCallActivity, supabase]
   );
 
   // Accept an Incoming Call
@@ -373,6 +508,11 @@ export function useOneToOneCall({
             }
           })
           .on("broadcast", { event: "call_ended" }, () => {
+            if (callConnectedRef.current) {
+              recordCallActivity("completed", callDurationRef.current);
+            } else {
+              recordCallActivity("missed", 0);
+            }
             cleanupCall();
             setCallStatus("ended");
             setTimeout(() => setCallStatus("idle"), 1500);
@@ -395,11 +535,16 @@ export function useOneToOneCall({
         declineCall();
       }
     },
-    [activePeerId, callType, currentUserId, createPeerConnection, cleanupCall, supabase]
+    [activePeerId, callType, currentUserId, createPeerConnection, cleanupCall, recordCallActivity, supabase]
   );
 
   // Decline an Incoming Call
   const declineCall = useCallback(() => {
+    if (ringingTimerRef.current) {
+      clearTimeout(ringingTimerRef.current);
+      ringingTimerRef.current = null;
+    }
+    recordCallActivity("declined", 0);
     if (activePeerId) {
       const channel = supabase.channel(getChannelName(activePeerId));
       channel.subscribe(() => {
@@ -413,10 +558,19 @@ export function useOneToOneCall({
     }
     cleanupCall();
     setCallStatus("idle");
-  }, [activePeerId, cleanupCall, supabase]);
+  }, [activePeerId, cleanupCall, recordCallActivity, supabase]);
 
   // End an Active Call
   const endCall = useCallback(() => {
+    if (ringingTimerRef.current) {
+      clearTimeout(ringingTimerRef.current);
+      ringingTimerRef.current = null;
+    }
+    if (callConnectedRef.current) {
+      recordCallActivity("completed", callDurationRef.current);
+    } else if (callStatus === "calling" || callStatus === "connecting") {
+      recordCallActivity("missed", 0);
+    }
     if (channelRef.current) {
       channelRef.current.send({
         type: "broadcast",
@@ -427,7 +581,7 @@ export function useOneToOneCall({
     cleanupCall();
     setCallStatus("ended");
     setTimeout(() => setCallStatus("idle"), 1500);
-  }, [currentUserId, cleanupCall]);
+  }, [currentUserId, callStatus, cleanupCall, recordCallActivity]);
 
   // Toggle Microphone Mute
   const toggleMic = useCallback(() => {

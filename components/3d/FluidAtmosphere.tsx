@@ -28,7 +28,8 @@ export function FluidAtmosphere() {
           repeat: Infinity,
           ease: "easeInOut",
         }}
-        className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-brand-600/15 via-indigo-500/12 to-purple-500/10 blur-[120px] dark:from-brand-500/20 dark:via-indigo-500/15 dark:to-purple-600/10"
+        style={{ willChange: "transform", transform: "translateZ(0)" }}
+        className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-brand-600/15 via-indigo-500/12 to-purple-500/10 blur-[120px] dark:from-brand-500/20 dark:via-indigo-500/15 dark:to-purple-600/10 transform-gpu"
       />
 
       <motion.div
@@ -43,7 +44,8 @@ export function FluidAtmosphere() {
           ease: "easeInOut",
           delay: 2,
         }}
-        className="absolute top-1/3 -right-32 w-[650px] h-[650px] rounded-full bg-gradient-to-br from-purple-500/15 via-pink-500/10 to-amber-500/10 blur-[130px] dark:from-purple-600/20 dark:via-pink-500/15 dark:to-amber-500/12"
+        style={{ willChange: "transform", transform: "translateZ(0)" }}
+        className="absolute top-1/3 -right-32 w-[650px] h-[650px] rounded-full bg-gradient-to-br from-purple-500/15 via-pink-500/10 to-amber-500/10 blur-[130px] dark:from-purple-600/20 dark:via-pink-500/15 dark:to-amber-500/12 transform-gpu"
       />
 
       <motion.div
@@ -58,7 +60,8 @@ export function FluidAtmosphere() {
           ease: "easeInOut",
           delay: 4,
         }}
-        className="absolute -bottom-40 left-1/4 w-[700px] h-[700px] rounded-full bg-gradient-to-tr from-emerald-500/12 via-teal-500/10 to-brand-500/15 blur-[140px] dark:from-emerald-600/15 dark:via-teal-600/12 dark:to-brand-600/18"
+        style={{ willChange: "transform", transform: "translateZ(0)" }}
+        className="absolute -bottom-40 left-1/4 w-[700px] h-[700px] rounded-full bg-gradient-to-tr from-emerald-500/12 via-teal-500/10 to-brand-500/15 blur-[140px] dark:from-emerald-600/15 dark:via-teal-600/12 dark:to-brand-600/18 transform-gpu"
       />
 
       {/* Subtle organic geometric mesh overlay */}

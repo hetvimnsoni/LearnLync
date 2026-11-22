@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { resolveFileMime, CHAT_STORAGE_BUCKET } from "@/lib/supabase/chatStorage";
 
 export const dynamic = "force-dynamic";
-
-const CHAT_BUCKET = "chat-attachments";
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,6 +35,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Resolve exact allowed MIME type from file.type or file extension.
+    // Disallows application/octet-stream and arbitrary wildcards.
+    const mime = resolveFileMime(file);
+    if (!mime) {
+      return NextResponse.json(
+        {
+          error: `File type for "${file.name}" is not supported. Please upload an image, PDF, document, audio, or archive.`,
+        },
+        { status: 400 }
+      );
+    }
+
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
     const storagePath = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${sanitizedName}`;
 
@@ -43,34 +54,44 @@ export async function POST(req: NextRequest) {
 
     // Upload directly to dedicated private bucket 'chat-attachments'
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from(CHAT_BUCKET)
+      .from(CHAT_STORAGE_BUCKET)
       .upload(storagePath, buffer, {
-        contentType: file.type || "application/octet-stream",
+        contentType: mime,
         upsert: false,
       });
 
     if (uploadError) {
       console.error("Storage upload error in /api/chat/upload:", uploadError);
+      const isRlsError =
+        uploadError.message?.toLowerCase().includes("row-level security") ||
+        uploadError.message?.toLowerCase().includes("policy") ||
+        uploadError.message?.toLowerCase().includes("bucket");
+
+      const helpfulMsg = isRlsError
+        ? `Storage permission blocked: The Supabase storage bucket 'chat-attachments' requires active RLS policies. Please run the SQL migration in 'supabase/fix_chat_attachments_storage.sql' in your Supabase SQL Editor.`
+        : `Storage upload failed: ${uploadError.message}`;
+
       return NextResponse.json(
         {
-          error: `Storage upload failed: ${uploadError.message}. Make sure the 'chat-attachments' bucket exists and RLS policies are applied.`,
+          error: helpfulMsg,
+          code: uploadError.name || "STORAGE_ERROR",
         },
         { status: 500 }
       );
     }
 
-    // Generate secure signed URL for private bucket access (30 days validity)
+    // Generate secure short-lived signed URL for private bucket access (2 hours validity)
     let signedUrl = "";
     const { data: signedData, error: signedError } = await supabase.storage
-      .from(CHAT_BUCKET)
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 30);
+      .from(CHAT_STORAGE_BUCKET)
+      .createSignedUrl(storagePath, 60 * 60 * 2);
 
     if (signedData?.signedUrl) {
       signedUrl = signedData.signedUrl;
     } else {
       console.warn("Could not generate signed URL:", signedError?.message);
       // Fallback to getPublicUrl if available
-      const { data: pubData } = supabase.storage.from(CHAT_BUCKET).getPublicUrl(storagePath);
+      const { data: pubData } = supabase.storage.from(CHAT_STORAGE_BUCKET).getPublicUrl(storagePath);
       signedUrl = pubData.publicUrl;
     }
 
@@ -81,7 +102,7 @@ export async function POST(req: NextRequest) {
           sender_id: user.id,
           receiver_id: receiverId,
           file_name: file.name,
-          file_type: file.type || "application/octet-stream",
+          file_type: mime,
           file_size: file.size,
           storage_path: storagePath,
           public_url: signedUrl,
@@ -97,7 +118,7 @@ export async function POST(req: NextRequest) {
         id: `att_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         name: file.name,
         size: file.size,
-        type: file.type || "application/octet-stream",
+        type: mime,
         url: signedUrl,
         signedUrl,
         storagePath,

@@ -119,22 +119,22 @@ ${userContext}`;
       }
 
       if (conversationId) {
-        // Save user message
-        await supabase.from("ai_chat_messages").insert({
-          conversation_id: conversationId,
-          user_id: user.id,
-          role: "user",
-          content: message,
-        });
-
-        // Save assistant message
-        await supabase.from("ai_chat_messages").insert({
-          conversation_id: conversationId,
-          user_id: user.id,
-          role: "assistant",
-          content: aiText,
-          metadata: { mode, followUps },
-        });
+        // Save user message and assistant response in a single batch insert
+        await supabase.from("ai_chat_messages").insert([
+          {
+            conversation_id: conversationId,
+            user_id: user.id,
+            role: "user",
+            content: message,
+          },
+          {
+            conversation_id: conversationId,
+            user_id: user.id,
+            role: "assistant",
+            content: aiText,
+            metadata: { mode, followUps },
+          },
+        ]);
       }
     }
 

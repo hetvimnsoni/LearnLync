@@ -21,13 +21,16 @@ export async function ServerAppShell({
     user = authUser;
 
     if (user) {
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name, username, avatar_url")
-        .eq("id", user.id)
-        .single();
+      const [{ data }, pendingCountResult] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("full_name, username, avatar_url")
+          .eq("id", user.id)
+          .single(),
+        getPendingIncomingCount(),
+      ]);
       profile = data;
-      pendingCount = await getPendingIncomingCount();
+      pendingCount = pendingCountResult;
     }
   } catch (error: any) {
     // Gracefully handle dynamic server usage during static page export

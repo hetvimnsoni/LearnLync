@@ -26,21 +26,22 @@ export default async function AIPage({ searchParams }: AIPageProps) {
 
   let userSkillsOffered: string[] = [];
 
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("skills_offered")
-      .eq("id", user.id)
-      .single();
+  // Fetch profile skills, user roadmaps, and quiz history in parallel
+  const [profileResult, roadmaps, quizAttempts] = await Promise.all([
+    user
+      ? supabase
+          .from("profiles")
+          .select("skills_offered")
+          .eq("id", user.id)
+          .single()
+      : Promise.resolve({ data: null }),
+    user ? getUserRoadmaps() : Promise.resolve([]),
+    user ? getUserQuizHistory() : Promise.resolve([]),
+  ]);
 
-    if (profile?.skills_offered) {
-      userSkillsOffered = profile.skills_offered;
-    }
+  if (profileResult.data?.skills_offered) {
+    userSkillsOffered = profileResult.data.skills_offered;
   }
-
-  // Pre-fetch user's roadmaps and quiz attempts if logged in
-  const roadmaps = user ? await getUserRoadmaps() : [];
-  const quizAttempts = user ? await getUserQuizHistory() : [];
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)]">

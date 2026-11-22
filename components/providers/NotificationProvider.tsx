@@ -105,9 +105,22 @@ export function NotificationProvider({
       }
 
       try {
-        const { data } = await supabase
-          .from("profiles")
-          .select("id, full_name, username, avatar_url");
+        // Resolve target UUID to query specifically instead of an unbounded table scan
+        let targetUuid: string | null = null;
+        if (nexconnId.includes("-")) {
+          targetUuid = nexconnId;
+        } else if (/^[0-9a-f]{32}$/i.test(nexconnId)) {
+          targetUuid = `${nexconnId.slice(0, 8)}-${nexconnId.slice(8, 12)}-${nexconnId.slice(12, 16)}-${nexconnId.slice(16, 20)}-${nexconnId.slice(20)}`;
+        }
+
+        let query = supabase.from("profiles").select("id, full_name, username, avatar_url");
+        if (targetUuid) {
+          query = query.eq("id", targetUuid);
+        } else {
+          query = query.limit(50);
+        }
+
+        const { data } = await query;
 
         if (data && Array.isArray(data)) {
           for (const p of data) {
@@ -118,6 +131,7 @@ export function NotificationProvider({
               avatarUrl: p.avatar_url || null,
             };
             profileCacheRef.current.set(mapped, info);
+            profileCacheRef.current.set(p.id, info);
           }
         }
       } catch (err) {

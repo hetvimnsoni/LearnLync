@@ -16,12 +16,21 @@ export default async function CalendarPage() {
     redirect("/login?redirectTo=/calendar");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, username, avatar_url")
-    .eq("id", user.id)
-    .single();
+  // Fetch current user profile and scheduled meetings in parallel
+  const [profileResult, meetingsResult] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("full_name, username, avatar_url")
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("scheduled_meetings")
+      .select("*")
+      .order("meeting_date", { ascending: true })
+      .order("start_time", { ascending: true }),
+  ]);
 
+  const profile = profileResult.data;
   const currentUserName =
     profile?.full_name ||
     profile?.username ||
@@ -31,11 +40,8 @@ export default async function CalendarPage() {
   let initialMeetings: ScheduledMeeting[] = [];
 
   try {
-    const { data: rawMeetings, error: meetError } = await supabase
-      .from("scheduled_meetings")
-      .select("*")
-      .order("meeting_date", { ascending: true })
-      .order("start_time", { ascending: true });
+    const rawMeetings = meetingsResult.data;
+    const meetError = meetingsResult.error;
 
     if (!meetError && rawMeetings && Array.isArray(rawMeetings) && rawMeetings.length > 0) {
       const ownerIds = Array.from(

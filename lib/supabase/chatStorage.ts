@@ -17,6 +17,10 @@ export const SUPPORTED_IMAGE_TYPES = [
   "image/png",
   "image/webp",
   "image/gif",
+  "image/svg+xml",
+  "image/heic",
+  "image/heif",
+  "image/avif",
 ];
 
 export const SUPPORTED_DOC_EXTENSIONS = [
@@ -27,12 +31,90 @@ export const SUPPORTED_DOC_EXTENSIONS = [
   ".xlsx",
   ".ppt",
   ".pptx",
+  ".rtf",
   ".txt",
+  ".csv",
+  ".md",
+  ".json",
   ".zip",
   ".rar",
   ".7z",
-  ".csv",
+  ".tar",
+  ".gz",
 ];
+
+// Explicit mapping of allowed file extensions to canonical MIME types.
+// Used to reliably resolve MIME types when browsers omit file.type (e.g. .rar, .7z)
+// without falling back to arbitrary or dangerous application/octet-stream.
+export const EXTENSION_TO_MIME: Record<string, string> = {
+  // Images
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+  ".svg": "image/svg+xml",
+  ".heic": "image/heic",
+  ".heif": "image/heif",
+  ".avif": "image/avif",
+  // Documents
+  ".pdf": "application/pdf",
+  ".doc": "application/msword",
+  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".xls": "application/vnd.ms-excel",
+  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ".ppt": "application/vnd.ms-powerpoint",
+  ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ".rtf": "application/rtf",
+  // Text & data (explicit types only; excludes text/html to prevent stored XSS)
+  ".txt": "text/plain",
+  ".csv": "text/csv",
+  ".md": "text/markdown",
+  ".json": "application/json",
+  // Audio
+  ".webm": "audio/webm",
+  ".mp3": "audio/mpeg",
+  ".wav": "audio/wav",
+  ".ogg": "audio/ogg",
+  ".m4a": "audio/m4a",
+  ".aac": "audio/aac",
+  // Archives
+  ".zip": "application/zip",
+  ".rar": "application/x-rar-compressed",
+  ".7z": "application/x-7z-compressed",
+  ".tar": "application/x-tar",
+  ".gz": "application/gzip",
+};
+
+export const ALLOWED_MIME_TYPES = new Set([
+  ...Object.values(EXTENSION_TO_MIME),
+  "application/x-zip-compressed",
+  "application/vnd.rar",
+  "audio/mp4",
+  "audio/x-m4a",
+]);
+
+/**
+ * Resolves a canonical, allowed MIME type for a file.
+ * Rejects unsupported types and prevents arbitrary application/octet-stream uploads.
+ */
+export function resolveFileMime(file: File): string | null {
+  if (!file) return null;
+  const ext = file.name ? file.name.slice(file.name.lastIndexOf(".")).toLowerCase() : "";
+  const mappedMime = EXTENSION_TO_MIME[ext];
+
+  // If the browser provided an allowed MIME type, verify and use it
+  if (file.type && ALLOWED_MIME_TYPES.has(file.type)) {
+    return file.type;
+  }
+
+  // If the browser provided an empty or generic type, use the extension mapping
+  if (mappedMime && ALLOWED_MIME_TYPES.has(mappedMime)) {
+    return mappedMime;
+  }
+
+  return null;
+}
 
 export function validateFile(file: File): FileValidationResult {
   if (!file) {
@@ -50,6 +132,14 @@ export function validateFile(file: File): FileValidationResult {
     return { valid: false, error: `File "${file.name}" is empty (0 bytes).` };
   }
 
+  const resolvedMime = resolveFileMime(file);
+  if (!resolvedMime) {
+    return {
+      valid: false,
+      error: `File type for "${file.name}" is not supported. Please upload a supported image, document, audio, or archive file.`,
+    };
+  }
+
   return { valid: true };
 }
 
@@ -62,10 +152,12 @@ export function formatFileSize(bytes: number): string {
 }
 
 export function isImageFile(fileType: string, fileName?: string): boolean {
+  // SVGs are treated as downloadable documents rather than image previews to prevent inline rendering risks
+  if (fileType === "image/svg+xml") return false;
   if (fileType && fileType.startsWith("image/")) return true;
   if (fileName) {
     const ext = fileName.toLowerCase().slice(fileName.lastIndexOf("."));
-    return [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"].includes(ext);
+    return [".jpg", ".jpeg", ".png", ".webp", ".gif"].includes(ext);
   }
   return false;
 }
@@ -74,20 +166,23 @@ export interface UploadProgressCallback {
   (progressPercent: number): void;
 }
 
+// 2 hours in seconds for short-lived, secure signed URLs (replaces vulnerable 30-day URLs)
+export const SIGNED_URL_EXPIRY_SECONDS = 60 * 60 * 2; // 7200 seconds
+
 // In-memory cache for dynamically refreshed signed URLs
 const signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
 
 /**
  * Retrieves a fresh signed URL for a file in the private chat-attachments bucket.
- * Uses in-memory cache to avoid duplicate API calls.
+ * Uses in-memory cache to avoid duplicate API calls while ensuring tight expiration windows.
  */
 export async function getAttachmentSignedUrl(storagePath: string): Promise<string> {
   if (!storagePath) return "";
 
   const cached = signedUrlCache.get(storagePath);
   const now = Date.now();
-  // Return cached signed URL if valid for at least 1 more day
-  if (cached && cached.expiresAt > now + 86400000) {
+  // Return cached signed URL if valid for at least 10 more minutes
+  if (cached && cached.expiresAt > now + 10 * 60 * 1000) {
     return cached.url;
   }
 
@@ -95,24 +190,24 @@ export async function getAttachmentSignedUrl(storagePath: string): Promise<strin
     const supabase = createClient();
     const { data, error } = await supabase.storage
       .from(CHAT_STORAGE_BUCKET)
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 30);
+      .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS);
 
     if (data?.signedUrl) {
       signedUrlCache.set(storagePath, {
         url: data.signedUrl,
-        expiresAt: now + 60 * 60 * 24 * 30 * 1000,
+        expiresAt: now + SIGNED_URL_EXPIRY_SECONDS * 1000,
       });
       return data.signedUrl;
     }
 
-    // Try via server endpoint if client call had an issue
+    // Try via server endpoint if client call had an issue (e.g. server-side verification)
     const res = await fetch(`/api/chat/signed-url?path=${encodeURIComponent(storagePath)}`);
     if (res.ok) {
       const json = await res.json();
       if (json.signedUrl) {
         signedUrlCache.set(storagePath, {
           url: json.signedUrl,
-          expiresAt: now + 60 * 60 * 24 * 30 * 1000,
+          expiresAt: now + SIGNED_URL_EXPIRY_SECONDS * 1000,
         });
         return json.signedUrl;
       }
@@ -135,10 +230,15 @@ export async function uploadChatFile(
   onProgress?: UploadProgressCallback,
   signal?: AbortSignal
 ): Promise<AttachmentFile> {
-  // 1. Validate
+  // 1. Validate and resolve canonical MIME type
   const validation = validateFile(file);
   if (!validation.valid) {
     throw new Error(validation.error);
+  }
+
+  const resolvedMime = resolveFileMime(file);
+  if (!resolvedMime) {
+    throw new Error(`File type for "${file.name}" is not supported.`);
   }
 
   if (signal?.aborted) {
@@ -154,12 +254,12 @@ export async function uploadChatFile(
   let directUploadSuccess = false;
   let uploadError: any = null;
 
-  // 2. Try direct Supabase storage upload first to chat-attachments
+  // 2. Try direct Supabase storage upload first to chat-attachments using exact resolved MIME type
   try {
     const { data, error } = await supabase.storage
       .from(CHAT_STORAGE_BUCKET)
       .upload(storagePath, file, {
-        contentType: file.type || "application/octet-stream",
+        contentType: resolvedMime,
         upsert: false,
       });
 
@@ -175,12 +275,12 @@ export async function uploadChatFile(
   if (directUploadSuccess) {
     onProgress?.(80);
 
-    // Generate signed URL (valid for 30 days) for private bucket access
+    // Generate short-lived signed URL (2 hours) for secure private bucket access
     let signedUrl = "";
     try {
       const { data: signedData } = await supabase.storage
         .from(CHAT_STORAGE_BUCKET)
-        .createSignedUrl(storagePath, 60 * 60 * 24 * 30);
+        .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS);
       if (signedData?.signedUrl) {
         signedUrl = signedData.signedUrl;
       }
@@ -196,7 +296,7 @@ export async function uploadChatFile(
     // Cache the signed URL
     signedUrlCache.set(storagePath, {
       url: signedUrl,
-      expiresAt: Date.now() + 60 * 60 * 24 * 30 * 1000,
+      expiresAt: Date.now() + SIGNED_URL_EXPIRY_SECONDS * 1000,
     });
 
     // Record metadata in chat_attachments table (non-blocking)
@@ -205,7 +305,7 @@ export async function uploadChatFile(
         sender_id: currentUserId,
         receiver_id: receiverId,
         file_name: file.name,
-        file_type: file.type || "application/octet-stream",
+        file_type: resolvedMime,
         file_size: file.size,
         storage_path: storagePath,
         public_url: signedUrl,
@@ -218,7 +318,7 @@ export async function uploadChatFile(
       id: `att_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       name: file.name,
       size: file.size,
-      type: file.type || "application/octet-stream",
+      type: resolvedMime,
       url: signedUrl,
       signedUrl,
       storagePath,
@@ -253,7 +353,7 @@ export async function uploadChatFile(
   if (json.file?.storagePath && json.file?.url) {
     signedUrlCache.set(json.file.storagePath, {
       url: json.file.url,
-      expiresAt: Date.now() + 60 * 60 * 24 * 30 * 1000,
+      expiresAt: Date.now() + SIGNED_URL_EXPIRY_SECONDS * 1000,
     });
   }
 

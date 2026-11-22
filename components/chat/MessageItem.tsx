@@ -5,6 +5,7 @@ import {
   ChatMessage,
   parseVoiceMessage,
   parseAttachmentMessage,
+  parseCallMessage,
   isDeletedForEveryonePayload,
 } from "@/types/chat";
 import { VoiceMessagePlayer } from "./VoiceMessagePlayer";
@@ -19,6 +20,11 @@ import {
   MoreVertical,
   Trash2,
   Ban,
+  PhoneMissed,
+  PhoneCall,
+  PhoneOff,
+  Phone,
+  Video,
 } from "lucide-react";
 
 interface MessageItemProps {
@@ -27,6 +33,7 @@ interface MessageItemProps {
   peerInitial: string;
   onRetry?: (msg: ChatMessage) => void;
   onDeleteRequest?: (msg: ChatMessage) => void;
+  onCallPeer?: (callType: "video" | "audio") => void;
 }
 
 export function MessageItem({
@@ -35,6 +42,7 @@ export function MessageItem({
   peerInitial,
   onRetry,
   onDeleteRequest,
+  onCallPeer,
 }: MessageItemProps) {
   const isSelf = message.isSelf;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -66,6 +74,11 @@ export function MessageItem({
     return message.attachmentData || parseAttachmentMessage(message.text);
   }, [message.attachmentData, message.text, isDeleted]);
 
+  const callData = useMemo(() => {
+    if (isDeleted) return null;
+    return message.callData || parseCallMessage(message.text);
+  }, [message.callData, message.text, isDeleted]);
+
   const { imageFiles, docFiles } = useMemo(() => {
     if (!attachmentData) return { imageFiles: [], docFiles: [] };
     const images = attachmentData.files.filter((f) => isImageFile(f.type, f.name));
@@ -81,6 +94,116 @@ export function MessageItem({
       return "";
     }
   };
+
+  const formatCallDateTime = (timestamp: number) => {
+    try {
+      const d = new Date(timestamp);
+      const now = new Date();
+      const isToday =
+        d.getDate() === now.getDate() &&
+        d.getMonth() === now.getMonth() &&
+        d.getFullYear() === now.getFullYear();
+      const timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      if (isToday) return `Today at ${timeStr}`;
+      return `${d.toLocaleDateString([], { month: "short", day: "numeric" })}, ${timeStr}`;
+    } catch {
+      return "";
+    }
+  };
+
+  const formatCallDuration = (secs: number) => {
+    if (!secs || secs <= 0) return "0 sec";
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    if (m === 0) return `${s} sec`;
+    if (s === 0) return `${m} min`;
+    return `${m} min ${s} sec`;
+  };
+
+  // Render Call Record Card if this message is a call log
+  if (callData) {
+    const isCallSelf = isSelf;
+    const isVideo = callData.callType === "video";
+    const isMissed =
+      callData.status === "missed" || (callData.status === "no_answer" && !isCallSelf);
+    const isCompleted = callData.status === "completed";
+    const isDeclined = callData.status === "declined";
+    const isUnansweredOut = callData.status === "no_answer" && isCallSelf;
+
+    let title = isVideo ? "Video Call" : "Audio Call";
+    if (isMissed) {
+      title = isVideo ? "Missed video call" : "Missed audio call";
+    } else if (isCompleted) {
+      title = isVideo ? "Video call completed" : "Audio call completed";
+    } else if (isDeclined) {
+      title = isCallSelf
+        ? isVideo ? "Video call declined" : "Audio call declined"
+        : isVideo ? "Declined video call" : "Declined audio call";
+    } else if (isUnansweredOut) {
+      title = isVideo ? "Outgoing video call (No answer)" : "Outgoing audio call (No answer)";
+    }
+
+    const callTimeStr = formatCallDateTime(callData.timestamp || message.sentTime);
+    const durationStr = formatCallDuration(callData.duration);
+
+    return (
+      <div className="flex justify-center w-full my-3 px-2">
+        <div
+          className={`flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-md shadow-2xs max-w-sm sm:max-w-md w-full transition-all ${
+            isMissed
+              ? "bg-rose-50/90 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60 text-rose-900 dark:text-rose-200"
+              : isCompleted
+              ? "bg-emerald-50/90 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/60 text-emerald-900 dark:text-emerald-200"
+              : "bg-slate-50/90 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200"
+          }`}
+        >
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-2xs ${
+              isMissed
+                ? "bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-300"
+                : isCompleted
+                ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-300"
+                : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+            }`}
+          >
+            {isMissed ? (
+              <PhoneMissed className="w-5 h-5" />
+            ) : isCompleted ? (
+              isVideo ? <Video className="w-5 h-5" /> : <PhoneCall className="w-5 h-5" />
+            ) : (
+              <PhoneOff className="w-5 h-5" />
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs sm:text-sm font-bold truncate">{title}</span>
+              <span className="text-[11px] font-medium opacity-75 shrink-0">{callTimeStr}</span>
+            </div>
+            <div className="flex items-center justify-between gap-2 mt-1">
+              <span className="text-[11px] opacity-75">
+                {isCompleted ? durationStr : isMissed ? "No answer" : "Call ended"}
+              </span>
+              {onCallPeer && (
+                <button
+                  type="button"
+                  onClick={() => onCallPeer(callData.callType)}
+                  className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition inline-flex items-center gap-1.5 ${
+                    isMissed
+                      ? "bg-rose-600 hover:bg-rose-700 text-white shadow-2xs"
+                      : "bg-brand-600 hover:bg-brand-700 text-white shadow-2xs"
+                  }`}
+                >
+                  {isVideo ? <Video className="w-3.5 h-3.5" /> : <Phone className="w-3.5 h-3.5" />}
+                  <span>Call back</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex w-full ${isSelf ? "justify-end" : "justify-start"} group relative`}>

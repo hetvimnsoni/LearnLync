@@ -60,18 +60,19 @@ export async function issueExchangeCertificates(
       };
     }
 
-    // 2. Fetch profiles of sender and receiver
-    const { data: sender } = await supabase
-      .from("profiles")
-      .select("id, full_name, username")
-      .eq("id", exchange.sender_id)
-      .single();
-
-    const { data: receiver } = await supabase
-      .from("profiles")
-      .select("id, full_name, username")
-      .eq("id", exchange.receiver_id)
-      .single();
+    // 2. Fetch profiles of sender and receiver in parallel
+    const [{ data: sender }, { data: receiver }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, full_name, username")
+        .eq("id", exchange.sender_id)
+        .single(),
+      supabase
+        .from("profiles")
+        .select("id, full_name, username")
+        .eq("id", exchange.receiver_id)
+        .single(),
+    ]);
 
     const senderName = sender?.full_name || sender?.username || "Learner 1";
     const receiverName = receiver?.full_name || receiver?.username || "Learner 2";

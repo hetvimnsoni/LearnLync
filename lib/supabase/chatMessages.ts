@@ -3,6 +3,7 @@ import {
   ChatMessage,
   parseAttachmentMessage,
   parseVoiceMessage,
+  parseCallMessage,
   isDeletedForEveryonePayload,
 } from "@/types/chat";
 import { toNexconnUserId } from "@/lib/nexconn/identity";
@@ -22,6 +23,7 @@ export function rowToChatMessage(
   const rawText = isDeletedForEveryone ? "🚫 This message was deleted" : row.text || "";
   const attachmentData = !isDeletedForEveryone ? parseAttachmentMessage(rawText) || undefined : undefined;
   const voiceData = !isDeletedForEveryone ? parseVoiceMessage(rawText) || undefined : undefined;
+  const callData = !isDeletedForEveryone ? parseCallMessage(rawText) || undefined : undefined;
 
   const sentTime = row.created_at ? new Date(row.created_at).getTime() : Date.now();
   const senderNexconn = isSelf
@@ -37,6 +39,7 @@ export function rowToChatMessage(
     isSelf,
     attachmentData,
     voiceData,
+    callData,
     isDeletedForEveryone,
   };
 }

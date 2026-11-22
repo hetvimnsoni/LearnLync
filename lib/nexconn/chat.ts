@@ -17,6 +17,7 @@ import {
   ChatMessage,
   parseVoiceMessage,
   parseAttachmentMessage,
+  parseCallMessage,
   isDeletedForEveryonePayload,
 } from "@/types/chat";
 
@@ -127,6 +128,7 @@ export function toChatMessage(
   const isDeleted = isDeletedForEveryonePayload(text);
   const voiceData = !isDeleted ? parseVoiceMessage(text) || undefined : undefined;
   const attachmentData = !isDeleted ? parseAttachmentMessage(text) || undefined : undefined;
+  const callData = !isDeleted ? parseCallMessage(text) || undefined : undefined;
 
   return {
     id: msg.messageId || tempId || `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -138,6 +140,7 @@ export function toChatMessage(
     isSelf,
     voiceData,
     attachmentData,
+    callData,
     isDeletedForEveryone: isDeleted,
   };
 }

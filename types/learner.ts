@@ -1,3 +1,5 @@
+export type PeerConnectionStatus = "none" | "connected" | "pending";
+
 export interface PeerProfile {
   id: string; // Supabase auth.users UUID (36 chars)
   full_name: string | null;
@@ -8,10 +10,32 @@ export interface PeerProfile {
   skills_needed: string[];
   created_at: string;
   nexconnUserId: string; // Alphanumeric 32-char Nexconn User ID
+  connectionStatus?: PeerConnectionStatus;
+
+  // Geographic and Community Map properties (Optional, city-level approximate only)
+  city?: string | null;
+  country?: string | null;
+  country_code?: string | null;
+  show_on_community_map?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface LearnerFilterState {
   searchQuery: string;
   selectedSkill: string | null;
+  selectedWantedSkill?: string | null;
+  selectedCountry?: string | null;
+  selectedCategory?: string | null;
 }
 
+export type SkillCategory =
+  | "all"
+  | "programming"
+  | "ai_data"
+  | "design"
+  | "languages"
+  | "music"
+  | "photography"
+  | "science"
+  | "academics";

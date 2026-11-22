@@ -11,6 +11,9 @@ import {
   Users,
   MessageSquare,
   ArrowLeftRight,
+  Sparkles,
+  Award,
+  Calendar,
   User,
   Settings,
   LogOut,
@@ -51,6 +54,21 @@ export function DashboardSidebar({
       badge: null,
     },
     {
+      name: "Skill Exchanges",
+      href: "/requests",
+      icon: ArrowLeftRight,
+      isActive: pathname === "/requests",
+      badge:
+        displayPending > 0 ? (
+          <span
+            className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white animate-pulse"
+            title={`${displayPending} pending exchange request${displayPending > 1 ? "s" : ""}`}
+          >
+            {displayPending > 99 ? "99+" : displayPending}
+          </span>
+        ) : null,
+    },
+    {
       name: "Messages",
       href: "/chat",
       icon: MessageSquare,
@@ -66,19 +84,25 @@ export function DashboardSidebar({
         ) : null,
     },
     {
-      name: "Requests",
-      href: "/requests",
-      icon: ArrowLeftRight,
-      isActive: pathname === "/requests",
-      badge:
-        displayPending > 0 ? (
-          <span
-            className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white animate-pulse"
-            title={`${displayPending} pending exchange request${displayPending > 1 ? "s" : ""}`}
-          >
-            {displayPending > 99 ? "99+" : displayPending}
-          </span>
-        ) : null,
+      name: "AI Learning Hub",
+      href: "/ai",
+      icon: Sparkles,
+      isActive: pathname.startsWith("/ai"),
+      badge: null,
+    },
+    {
+      name: "Certificates",
+      href: "/certificates",
+      icon: Award,
+      isActive: pathname.startsWith("/certificates"),
+      badge: null,
+    },
+    {
+      name: "Calendar",
+      href: "/calendar",
+      icon: Calendar,
+      isActive: pathname.startsWith("/calendar"),
+      badge: null,
     },
     {
       name: "Profile",
@@ -150,6 +174,7 @@ export function DashboardSidebar({
               <Link
                 key={item.name}
                 href={item.href}
+                prefetch={true}
                 onClick={handleLinkClick}
                 className={`group flex items-center justify-between px-4 py-3 rounded-2xl text-xs sm:text-sm font-medium transition-all duration-200 ${
                   item.isActive

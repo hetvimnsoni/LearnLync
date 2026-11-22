@@ -29,10 +29,28 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Generate signed URL valid for 30 days
+    // Verify recipient authorization if requester is not the original uploader
+    const isUploader = storagePath.startsWith(user.id + "/");
+    if (!isUploader && bucket === "chat-attachments") {
+      const { data: authRecord } = await supabase
+        .from("chat_attachments")
+        .select("id")
+        .eq("storage_path", storagePath)
+        .eq("receiver_id", user.id)
+        .maybeSingle();
+
+      if (!authRecord) {
+        return NextResponse.json(
+          { error: "Forbidden: You are not an authorized recipient of this attachment." },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Generate secure short-lived signed URL valid for 2 hours (7200s)
     const { data, error } = await supabase.storage
       .from(bucket)
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 30);
+      .createSignedUrl(storagePath, 60 * 60 * 2);
 
     if (error || !data?.signedUrl) {
       return NextResponse.json(

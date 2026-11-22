@@ -32,33 +32,17 @@ export default async function DashboardPage() {
     redirect("/login?redirectTo=/dashboard");
   }
 
-  // Fetch or fallback profile from Supabase profiles table
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  const fullName =
-    profile?.full_name ||
-    user.user_metadata?.full_name ||
-    "Prachi Patel";
-  const username = profile?.username || "prachi";
-  const bio = profile?.bio || "No bio added yet. Tell other learners about yourself!";
-  const skillsOffered: string[] = profile?.skills_offered || ["JavaScript", "React", "Next.js"];
-  const skillsNeeded: string[] = profile?.skills_needed || ["Python", "Machine Learning", "System Design"];
-
-  // Retrieve discoverable peers from Supabase (excluding current user)
-  const { peers, error: peersError } = await getLearnerPeers();
-
-  // Retrieve exchange requests for active user
-  const requestsData = await getExchangeRequests();
-  const { accepted, pendingIncomingCount } = requestsData;
-
-  // Retrieve upcoming scheduled meetings
-  let initialMeetings: ScheduledMeeting[] = [];
-  try {
-    const { data: rawMeetings } = await supabase
+  // Fetch profile, discoverable peers, exchange requests, and scheduled meetings in parallel
+  const [
+    { data: profile },
+    { peers, error: peersError },
+    requestsData,
+    rawMeetingsResult,
+  ] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    getLearnerPeers(),
+    getExchangeRequests(),
+    supabase
       .from("scheduled_meetings")
       .select(`
         id,
@@ -83,7 +67,24 @@ export default async function DashboardPage() {
         )
       `)
       .order("meeting_date", { ascending: true })
-      .order("start_time", { ascending: true });
+      .order("start_time", { ascending: true }),
+  ]);
+
+  const fullName =
+    profile?.full_name ||
+    user.user_metadata?.full_name ||
+    "Prachi Patel";
+  const username = profile?.username || "prachi";
+  const bio = profile?.bio || "No bio added yet. Tell other learners about yourself!";
+  const skillsOffered: string[] = profile?.skills_offered || ["JavaScript", "React", "Next.js"];
+  const skillsNeeded: string[] = profile?.skills_needed || ["Python", "Machine Learning", "System Design"];
+
+  const { accepted, pendingIncomingCount } = requestsData;
+
+  // Retrieve upcoming scheduled meetings
+  let initialMeetings: ScheduledMeeting[] = [];
+  try {
+    const rawMeetings = rawMeetingsResult.data;
 
     if (rawMeetings && Array.isArray(rawMeetings)) {
       initialMeetings = rawMeetings.map((row: any) => {

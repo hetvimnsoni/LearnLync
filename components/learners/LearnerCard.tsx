@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PeerProfile } from "@/types/learner";
+import { PeerProfile, PeerConnectionStatus } from "@/types/learner";
 import {
   Sparkles,
   BookOpen,
@@ -9,21 +9,31 @@ import {
   ArrowRight,
   MessageSquare,
   ArrowLeftRight,
+  Check,
 } from "lucide-react";
 
 interface LearnerCardProps {
   peer: PeerProfile;
+  connectionStatus?: PeerConnectionStatus;
   onSelectPeer: (peer: PeerProfile) => void;
   onRequestExchange?: (peer: PeerProfile) => void;
 }
 
-export function LearnerCard({ peer, onSelectPeer, onRequestExchange }: LearnerCardProps) {
+export function LearnerCard({ peer, connectionStatus = "none", onSelectPeer, onRequestExchange }: LearnerCardProps) {
   const initial = (peer.full_name || peer.username || "L").charAt(0).toUpperCase();
+  const isConnected = connectionStatus === "connected";
+  const isPending = connectionStatus === "pending";
 
   return (
     <div
       onClick={() => onSelectPeer(peer)}
-      className="group relative rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 shadow-sm hover:shadow-xl hover:shadow-brand-500/10 hover:border-brand-400 dark:hover:border-brand-500/70 transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between"
+      className={`group relative rounded-3xl border backdrop-blur-xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between ${
+        isConnected
+          ? "border-emerald-300/80 dark:border-emerald-700/60 bg-white/90 dark:bg-slate-900/90 hover:border-emerald-500 hover:shadow-emerald-500/10"
+          : isPending
+          ? "border-amber-300/80 dark:border-amber-700/60 bg-white/85 dark:bg-slate-900/85 hover:border-amber-500 hover:shadow-amber-500/10"
+          : "border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:border-brand-400 dark:hover:border-brand-500/70 hover:shadow-brand-500/10"
+      }`}
     >
       <div className="space-y-4">
         {/* Header: Avatar, Name, Username */}
@@ -33,10 +43,20 @@ export function LearnerCard({ peer, onSelectPeer, onRequestExchange }: LearnerCa
               <img
                 src={peer.avatar_url}
                 alt={peer.full_name || "Learner avatar"}
-                className="w-12 h-12 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
+                className={`w-12 h-12 rounded-2xl object-cover border shadow-sm ${
+                  isConnected ? "border-emerald-400" : isPending ? "border-amber-400" : "border-slate-200 dark:border-slate-700"
+                }`}
               />
             ) : (
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform">
+              <div
+                className={`w-12 h-12 rounded-2xl text-white flex items-center justify-center font-bold text-lg shadow-md group-hover:scale-105 transition-transform ${
+                  isConnected
+                    ? "bg-gradient-to-tr from-emerald-600 via-teal-600 to-cyan-600 shadow-emerald-500/20"
+                    : isPending
+                    ? "bg-gradient-to-tr from-amber-600 to-orange-600 shadow-amber-500/20"
+                    : "bg-gradient-to-tr from-brand-600 via-indigo-600 to-purple-600 shadow-brand-500/20"
+                }`}
+              >
                 {initial}
               </div>
             )}
@@ -50,10 +70,22 @@ export function LearnerCard({ peer, onSelectPeer, onRequestExchange }: LearnerCa
             </div>
           </div>
 
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
-            <Sparkles className="w-3 h-3 text-emerald-500 animate-pulse" />
-            <span>Active Peer</span>
-          </span>
+          {isConnected ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 shadow-2xs">
+              <Check className="w-3 h-3 text-emerald-500" />
+              <span>Connected</span>
+            </span>
+          ) : isPending ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <span>Pending</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
+              <Sparkles className="w-3 h-3 text-emerald-500 animate-pulse" />
+              <span>Active Peer</span>
+            </span>
+          )}
         </div>
 
         {/* Bio */}

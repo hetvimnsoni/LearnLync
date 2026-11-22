@@ -12,9 +12,16 @@ function getClientDemoCookie(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+let cachedBrowserClient: ReturnType<typeof createBrowserClient> | null = null;
+let cachedMockClient: ReturnType<typeof createBrowserClient> | null = null;
+let cachedDemoCookie: string | null = null;
+
 export function createClient(): ReturnType<typeof createBrowserClient> {
   const demoCookie = getClientDemoCookie();
   if (demoCookie && DEMO_PROFILES[demoCookie.toLowerCase()]) {
+    if (cachedMockClient && cachedDemoCookie === demoCookie) {
+      return cachedMockClient;
+    }
     const demoProfile = getDemoProfile(demoCookie);
     const demoUser = {
       id: demoProfile.id,
@@ -62,7 +69,13 @@ export function createClient(): ReturnType<typeof createBrowserClient> {
       }),
     };
 
-    return mockClient as unknown as ReturnType<typeof createBrowserClient>;
+    cachedDemoCookie = demoCookie;
+    cachedMockClient = mockClient as unknown as ReturnType<typeof createBrowserClient>;
+    return cachedMockClient;
+  }
+
+  if (cachedBrowserClient) {
+    return cachedBrowserClient;
   }
 
   const supabaseUrl =
@@ -72,5 +85,6 @@ export function createClient(): ReturnType<typeof createBrowserClient> {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     FALLBACK_SUPABASE_ANON_KEY;
 
-  return createBrowserClient(supabaseUrl, supabaseKey);
+  cachedBrowserClient = createBrowserClient(supabaseUrl, supabaseKey);
+  return cachedBrowserClient;
 }

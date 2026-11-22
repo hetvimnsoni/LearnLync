@@ -25,6 +25,14 @@ export interface AttachmentMessageData {
   caption?: string;
 }
 
+export interface CallMessageData {
+  type: "call";
+  callType: "video" | "audio";
+  status: "missed" | "completed" | "declined" | "no_answer";
+  duration: number; // in seconds
+  timestamp: number;
+}
+
 export interface ChatMessage {
   id: string; // Server messageId or local optimistic tempId
   tempId?: string; // Optimistic temporary identifier for deduplication
@@ -36,6 +44,7 @@ export interface ChatMessage {
   isSelf: boolean;
   voiceData?: VoiceMessageData; // Parsed voice message payload if present
   attachmentData?: AttachmentMessageData; // Parsed attachment message payload if present
+  callData?: CallMessageData; // Parsed video/audio call record payload if present
   isDeletedForEveryone?: boolean; // True if message was deleted for all participants
   isDeletedForMe?: boolean; // True if message was hidden for current user only
 }
@@ -179,5 +188,44 @@ export function formatDeletedForEveryonePayload(messageId: string): string {
   return JSON.stringify({
     type: "deleted_for_everyone",
     messageId,
+  });
+}
+
+/**
+ * Safely parses a video or audio call log payload from raw message text.
+ */
+export function parseCallMessage(text: string): CallMessageData | null {
+  if (!text) return null;
+  const clean = unescapeJson(text).trim();
+  if (!clean.startsWith("{") || !clean.endsWith("}")) return null;
+  if (!clean.includes('"type":"call"') && !clean.includes('"type": "call"')) return null;
+
+  try {
+    const parsed = JSON.parse(clean);
+    if (parsed && parsed.type === "call") {
+      return {
+        type: "call",
+        callType: parsed.callType === "audio" ? "audio" : "video",
+        status: parsed.status || "missed",
+        duration: typeof parsed.duration === "number" ? parsed.duration : 0,
+        timestamp: typeof parsed.timestamp === "number" ? parsed.timestamp : Date.now(),
+      };
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+/**
+ * Formats a call record into a JSON payload string.
+ */
+export function formatCallPayload(data: Omit<CallMessageData, "type">): string {
+  return JSON.stringify({
+    type: "call",
+    callType: data.callType,
+    status: data.status,
+    duration: data.duration || 0,
+    timestamp: data.timestamp || Date.now(),
   });
 }

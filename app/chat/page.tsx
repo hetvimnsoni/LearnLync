@@ -15,30 +15,38 @@ export default async function ChatIndexPage() {
     redirect("/login?redirectTo=/chat");
   }
 
-  // 1. Fetch user-specific hidden/deleted conversations
-  const hiddenPeerIds = new Set<string>();
-  try {
-    const { data: hiddenRows } = await supabase
-      .from("chat_hidden_conversations")
-      .select("peer_id")
-      .eq("user_id", user.id);
+  // Fetch hidden conversations, accepted exchanges, directory profiles, and user profile in parallel
+  const [hiddenResult, exchangesResult, profilesResult, myProfileResult] =
+    await Promise.all([
+      supabase
+        .from("chat_hidden_conversations")
+        .select("peer_id")
+        .eq("user_id", user.id),
+      supabase
+        .from("skill_exchanges")
+        .select("sender_id, receiver_id, status")
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .eq("status", "accepted"),
+      supabase
+        .from("profiles")
+        .select("id, full_name, username, avatar_url, bio, skills_offered, skills_needed")
+        .neq("id", user.id)
+        .limit(50),
+      supabase
+        .from("profiles")
+        .select("full_name, avatar_url")
+        .eq("id", user.id)
+        .maybeSingle(),
+    ]);
 
-    if (hiddenRows && Array.isArray(hiddenRows)) {
-      hiddenRows.forEach((r: { peer_id: string }) => {
-        if (r.peer_id) hiddenPeerIds.add(r.peer_id);
-      });
-    }
-  } catch (err) {
-    console.warn("Could not load hidden conversations:", err);
+  const hiddenPeerIds = new Set<string>();
+  if (hiddenResult.data && Array.isArray(hiddenResult.data)) {
+    hiddenResult.data.forEach((r: { peer_id: string }) => {
+      if (r.peer_id) hiddenPeerIds.add(r.peer_id);
+    });
   }
 
-  // 2. Fetch accepted skill exchanges involving current user to get priority peers
-  const { data: exchanges } = await supabase
-    .from("skill_exchanges")
-    .select("sender_id, receiver_id, status")
-    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-    .eq("status", "accepted");
-
+  const exchanges = exchangesResult.data;
   const acceptedPeerIds = new Set<string>();
   if (exchanges && Array.isArray(exchanges)) {
     for (const ex of exchanges) {
@@ -47,16 +55,9 @@ export default async function ChatIndexPage() {
     }
   }
 
-  // 3. Fetch all other profiles for learner directory & fallback contacts
-  const { data: allProfilesData } = await supabase
-    .from("profiles")
-    .select("id, full_name, username, avatar_url, bio, skills_offered, skills_needed")
-    .neq("id", user.id)
-    .limit(50);
+  const allLearners: PeerProfile[] = (profilesResult.data as PeerProfile[]) || [];
 
-  const allLearners: PeerProfile[] = (allProfilesData as PeerProfile[]) || [];
-
-  // 4. Construct initial conversation peers list
+  // Construct initial conversation peers list
   // Priority 1: Accepted exchange peers
   const priorityPeers: PeerProfile[] = allLearners.filter((p) => acceptedPeerIds.has(p.id));
 
@@ -70,12 +71,7 @@ export default async function ChatIndexPage() {
   // Default active peer is the first non-hidden conversation peer
   const firstUnhiddenPeer = conversationPeers.find((p) => !hiddenPeerIds.has(p.id)) || conversationPeers[0];
 
-  // Fetch current user's profile info for calling identification
-  const { data: myProfile } = await supabase
-    .from("profiles")
-    .select("full_name, avatar_url")
-    .eq("id", user.id)
-    .maybeSingle();
+  const myProfile = myProfileResult.data;
 
   const currentUserName =
     myProfile?.full_name ||

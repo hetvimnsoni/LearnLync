@@ -362,8 +362,9 @@ export function UnifiedAIChat({ onSelectFeatureTab }: UnifiedAIChatProps) {
                 <button
                   key={idx}
                   type="button"
+                  disabled={isTyping}
                   onClick={() => handleSend(p.text)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition shrink-0 shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition shrink-0 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Icon className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
                   <span>{p.label}</span>

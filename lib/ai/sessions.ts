@@ -36,18 +36,19 @@ export async function prepareAISession(exchangeId: string): Promise<{
       return { prep: null, error: "Skill exchange not found." };
     }
 
-    // 2. Fetch both profiles
-    const { data: sender } = await supabase
-      .from("profiles")
-      .select("id, full_name, username, bio")
-      .eq("id", exchange.sender_id)
-      .single();
-
-    const { data: receiver } = await supabase
-      .from("profiles")
-      .select("id, full_name, username, bio")
-      .eq("id", exchange.receiver_id)
-      .single();
+    // 2. Fetch both profiles in parallel
+    const [{ data: sender }, { data: receiver }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, full_name, username, bio")
+        .eq("id", exchange.sender_id)
+        .single(),
+      supabase
+        .from("profiles")
+        .select("id, full_name, username, bio")
+        .eq("id", exchange.receiver_id)
+        .single(),
+    ]);
 
     const senderName = sender?.full_name || sender?.username || "Learner 1";
     const receiverName = receiver?.full_name || receiver?.username || "Learner 2";

@@ -301,6 +301,16 @@ export function Hero3DScene() {
 
     window.addEventListener("mousemove", handleMouseMove);
 
+    // Viewport Intersection Observer to pause rendering when off-screen
+    let isVisible = true;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(container);
+
     // ==========================================
     // 7. ANIMATION LOOP
     // ==========================================
@@ -309,6 +319,7 @@ export function Hero3DScene() {
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+      if (!isVisible) return;
       const delta = clock.getDelta();
       const time = clock.getElapsedTime();
 
@@ -371,6 +382,7 @@ export function Hero3DScene() {
 
     // Teardown
     return () => {
+      observer.disconnect();
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationFrameId);

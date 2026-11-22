@@ -20,11 +20,15 @@ export default async function ProfilePage() {
     redirect("/login?redirectTo=/profile");
   }
 
-  const { data: dbProfile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  // Fetch profile record and profile stats in parallel
+  const [{ data: dbProfile }, stats] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single(),
+    getProfileStats(user.id),
+  ]);
 
   // If in demo mode or db profile fallback
   const demoFallback = getDemoProfile(user.id);
@@ -41,8 +45,6 @@ export default async function ProfilePage() {
     skills_needed: dbProfile?.skills_needed || demoFallback.skills_needed || [],
     created_at: dbProfile?.created_at || demoFallback.created_at || new Date().toISOString(),
   };
-
-  const stats = await getProfileStats(user.id);
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)] bg-slate-50/60 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">

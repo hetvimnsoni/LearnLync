@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PeerProfile } from "@/types/learner";
+import { PeerProfile, PeerConnectionStatus } from "@/types/learner";
 import {
   X,
   Sparkles,
@@ -10,11 +10,13 @@ import {
   MessageSquare,
   Calendar,
   ArrowLeftRight,
+  Check,
 } from "lucide-react";
 
 interface PeerProfileModalProps {
   peer: PeerProfile | null;
   currentUserId: string | null;
+  connectionStatus?: PeerConnectionStatus;
   onClose: () => void;
   onRequestExchange?: (peer: PeerProfile) => void;
 }
@@ -22,12 +24,15 @@ interface PeerProfileModalProps {
 export function PeerProfileModal({
   peer,
   currentUserId,
+  connectionStatus = "none",
   onClose,
   onRequestExchange,
 }: PeerProfileModalProps) {
   if (!peer) return null;
 
   const initial = (peer.full_name || peer.username || "L").charAt(0).toUpperCase();
+  const isConnected = connectionStatus === "connected";
+  const isPending = connectionStatus === "pending";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200">
@@ -63,10 +68,22 @@ export function PeerProfileModal({
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
                 {peer.full_name}
               </h2>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
-                <Sparkles className="w-3 h-3 text-emerald-500" />
-                <span>Verified Peer</span>
-              </span>
+              {isConnected ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 shadow-2xs">
+                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Connected Peer</span>
+                </span>
+              ) : isPending ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span>Request Pending</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
+                  <Sparkles className="w-3 h-3 text-emerald-500" />
+                  <span>Verified Peer</span>
+                </span>
+              )}
             </div>
             <p className="text-sm font-mono text-slate-500 dark:text-slate-400">
               @{peer.username}
@@ -150,18 +167,29 @@ export function PeerProfileModal({
             View Full Profile
           </Link>
 
-          {onRequestExchange && (
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                onRequestExchange(peer);
-              }}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 hover:bg-brand-600 hover:text-white transition shadow-sm border border-brand-200/60 dark:border-brand-800/60"
-            >
-              <ArrowLeftRight className="w-4 h-4" />
-              <span>Request Skill Exchange</span>
-            </button>
+          {isConnected ? (
+            <span className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+              <Check className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Connected Peer</span>
+            </span>
+          ) : isPending ? (
+            <span className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+              <span>⏳ Request Pending</span>
+            </span>
+          ) : (
+            onRequestExchange && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onRequestExchange(peer);
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 hover:bg-brand-600 hover:text-white transition shadow-sm border border-brand-200/60 dark:border-brand-800/60"
+              >
+                <ArrowLeftRight className="w-4 h-4" />
+                <span>Request Skill Exchange</span>
+              </button>
+            )
           )}
 
           <Link

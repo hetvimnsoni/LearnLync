@@ -11,6 +11,7 @@ import {
   AttachmentFile,
   parseAttachmentMessage,
   parseVoiceMessage,
+  parseCallMessage,
 } from "@/types/chat";
 import { MessageItem } from "./MessageItem";
 import { AttachmentMenu } from "./AttachmentMenu";
@@ -134,11 +135,18 @@ export function ChatRoom({
     error: recorderError,
   } = useAudioRecorder();
 
+  const handleSendMessageRef = useRef<(text: string, preParsedAttachment?: any) => Promise<void>>((() => {}) as any);
+
   // One-to-One calling hook (WebRTC + Supabase Realtime signaling)
   const call = useOneToOneCall({
     currentUserId,
     currentUserName,
     currentUserAvatar,
+    onCallEvent: (targetPeerId, payload) => {
+      if (targetPeerId === peer.id) {
+        handleSendMessageRef.current?.(payload);
+      }
+    },
   });
 
   // Handle auto-starting a call if requested
@@ -345,8 +353,9 @@ export function ChatRoom({
     if (!trimmed) return;
 
     const activeNexconnUserId = currentUserNexconnId || currentUserId.replace(/-/g, "").toLowerCase();
+    const isCallMsg = trimmed.includes('"type":"call"') || trimmed.includes('"type": "call"');
 
-    if (!isConnected) {
+    if (!isConnected && !isCallMsg) {
       setSendError("Cannot send message: Real-time chat is currently offline. Please reconnect.");
       return;
     }
@@ -354,7 +363,7 @@ export function ChatRoom({
     setSendError(null);
     setInputText("");
 
-    // Create optimistic message entry with instant attachment preview
+    // Create optimistic message entry with instant attachment / call preview
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
     const optimisticMsg: ChatMessage = {
       id: tempId,
@@ -366,6 +375,7 @@ export function ChatRoom({
       isSelf: true,
       attachmentData: preParsedAttachment || parseAttachmentMessage(trimmed) || undefined,
       voiceData: parseVoiceMessage(trimmed) || undefined,
+      callData: parseCallMessage(trimmed) || undefined,
     };
 
     setMessages((prev) => mergeAndSortMessages(prev, [optimisticMsg]));
@@ -419,6 +429,10 @@ export function ChatRoom({
     }
   };
 
+  useEffect(() => {
+    handleSendMessageRef.current = handleSendMessage;
+  });
+
   // 5. Retry a failed message
   const handleRetryMessage = (failedMsg: ChatMessage) => {
     setMessages((prev) => prev.filter((m) => m.id !== failedMsg.id));
@@ -447,17 +461,32 @@ export function ChatRoom({
         throw new Error(uploadError.message);
       }
 
-      // Generate 30-day signed URL for private bucket access
+      // Generate short-lived signed URL (2 hours) for private bucket access
       let audioUrl = "";
       const { data: signedData } = await supabase.storage
         .from(CHAT_STORAGE_BUCKET)
-        .createSignedUrl(fileName, 60 * 60 * 24 * 30);
+        .createSignedUrl(fileName, 60 * 60 * 2);
 
       if (signedData?.signedUrl) {
         audioUrl = signedData.signedUrl;
       } else {
         const { data: pubData } = supabase.storage.from(CHAT_STORAGE_BUCKET).getPublicUrl(fileName);
         audioUrl = pubData.publicUrl;
+      }
+
+      // Record metadata in chat_attachments table for recipient access before dispatching message
+      try {
+        await supabase.from("chat_attachments").insert({
+          sender_id: currentUserId,
+          receiver_id: peer.id,
+          file_name: `Voice note (${duration}s)`,
+          file_type: blob.type || "audio/webm",
+          file_size: blob.size,
+          storage_path: fileName,
+          public_url: audioUrl,
+        });
+      } catch (metaErr) {
+        console.warn("Could not record voice attachment metadata:", metaErr);
       }
 
       const payload = formatVoiceMessagePayload(audioUrl, duration, blob.type, fileName);
@@ -937,6 +966,7 @@ export function ChatRoom({
                 setSelectedMessageForDelete(targetMsg);
                 setIsMessageDeleteDialogOpen(true);
               }}
+              onCallPeer={(type) => call.startCall(peer, type)}
             />
           );
         })}
