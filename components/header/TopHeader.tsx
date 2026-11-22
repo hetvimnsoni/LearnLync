@@ -61,7 +61,7 @@ export function TopHeader({
   const avatarInitial = (displayName || "P").charAt(0).toUpperCase();
 
   return (
-    <header className="sticky top-0 z-40 w-full h-16 sm:h-20 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md transition-colors select-none">
+    <header className="sticky top-0 z-40 w-full h-14 min-[375px]:h-16 sm:h-20 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md transition-colors select-none">
       <div className="w-full h-full px-2.5 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* ===================================================================
             LEFT SECTION:
@@ -73,7 +73,7 @@ export function TopHeader({
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="p-2 sm:p-2.5 rounded-2xl text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 shrink-0"
+              className="p-1.5 min-[375px]:p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 shrink-0"
               aria-label={isSidebarOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={isSidebarOpen}
               title={isSidebarOpen ? "Close navigation menu" : "Open navigation menu"}
@@ -208,16 +208,16 @@ export function TopHeader({
                 </Link>
               </nav>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 min-[375px]:gap-2">
                 <Link
                   href="/login"
-                  className="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 transition"
+                  className="px-2.5 min-[375px]:px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 transition"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
-                  className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 shadow-sm transition"
+                  className="inline-flex items-center gap-1.5 px-3 min-[375px]:px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 shadow-sm transition"
                 >
                   <span>Get Started</span>
                 </Link>

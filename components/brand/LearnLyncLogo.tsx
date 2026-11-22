@@ -17,23 +17,23 @@ export function LearnLyncLogo({
   href = "/",
 }: LearnLyncLogoProps) {
   const iconSizes = {
-    sm: "w-8 h-8",
-    md: "w-9 h-9 sm:w-10 sm:h-10",
-    lg: "w-10 h-10 min-[380px]:w-12 min-[380px]:h-12 sm:w-14 sm:h-14 md:w-[56px] md:h-[56px]",
-    xl: "w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18",
+    sm: "w-6 h-6 sm:w-8 sm:h-8",
+    md: "w-7 h-7 sm:w-10 sm:h-10",
+    lg: "w-7 h-7 min-[375px]:w-8 min-[375px]:h-8 min-[410px]:w-[34px] min-[410px]:h-[34px] sm:w-14 sm:h-14 md:w-[56px] md:h-[56px]",
+    xl: "w-10 h-10 sm:w-16 sm:h-16 md:w-18 md:h-18",
   };
 
   const textSizes = {
-    sm: "text-base font-bold",
-    md: "text-lg sm:text-xl md:text-2xl font-extrabold",
-    lg: "text-lg min-[380px]:text-xl sm:text-[28px] md:text-[33px] font-black",
-    xl: "text-2xl sm:text-3xl md:text-5xl font-black",
+    sm: "text-xs sm:text-base font-bold",
+    md: "text-sm sm:text-xl md:text-2xl font-extrabold",
+    lg: "text-[15px] min-[375px]:text-[17px] min-[410px]:text-lg sm:text-[30px] md:text-[33px] font-black",
+    xl: "text-xl sm:text-3xl md:text-5xl font-black",
   };
 
   // Official 3D Emblem with Blue, Violet, and Purple gradients and dimensional specular sheen
   const emblemIcon = (
     <div
-      className={`relative ${iconSizes[size]} shrink-0 rounded-2xl flex items-center justify-center p-[2.5px] transition-transform duration-300 group-hover:scale-105 shadow-lg shadow-brand-500/25`}
+      className={`relative ${iconSizes[size]} shrink-0 rounded-xl sm:rounded-2xl flex items-center justify-center p-[2px] sm:p-[2.5px] transition-transform duration-300 group-hover:scale-105 shadow-md sm:shadow-lg shadow-brand-500/25`}
     >
       <svg
         viewBox="0 0 48 48"
@@ -123,7 +123,7 @@ export function LearnLyncLogo({
   );
 
   const content = (
-    <div className={`group inline-flex items-center gap-2 sm:gap-3.5 md:gap-4 ${className}`}>
+    <div className={`group inline-flex items-center gap-1.5 min-[375px]:gap-2 sm:gap-3.5 md:gap-4 ${className}`}>
       {emblemIcon}
       {wordmark}
     </div>
